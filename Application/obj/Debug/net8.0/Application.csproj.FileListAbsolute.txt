@@ -1,0 +1,15 @@
+/home/kley/SweetCandy/Application/bin/Debug/net8.0/Application.deps.json
+/home/kley/SweetCandy/Application/bin/Debug/net8.0/Application.dll
+/home/kley/SweetCandy/Application/bin/Debug/net8.0/Application.pdb
+/home/kley/SweetCandy/Application/bin/Debug/net8.0/Domain.dll
+/home/kley/SweetCandy/Application/bin/Debug/net8.0/Domain.pdb
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/Application.csproj.AssemblyReference.cache
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/Application.GeneratedMSBuildEditorConfig.editorconfig
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/Application.AssemblyInfoInputs.cache
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/Application.AssemblyInfo.cs
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/Application.csproj.CoreCompileInputs.cache
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/Application.csproj.CopyComplete
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/Application.dll
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/refint/Application.dll
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/Application.pdb
+/home/kley/SweetCandy/Application/obj/Debug/net8.0/ref/Application.dll
