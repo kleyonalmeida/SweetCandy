@@ -1,6 +1,6 @@
 using Domain.Entities;
 
-namespace Application.Features.Budget;
+namespace Application.Features.Budgets;
 
 public interface IBudgetService
 {

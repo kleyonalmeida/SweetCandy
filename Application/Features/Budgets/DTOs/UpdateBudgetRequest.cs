@@ -1,6 +1,8 @@
 namespace Application.Features.Budget.DTOs;
 
-public class CreateBudgetRequest
+using System.Collections.Generic;
+
+public class UpdateBudgetRequest
 {
   public string? ClientName { get; set; }
   public DateTime? EventDate { get; set; }
@@ -9,4 +11,5 @@ public class CreateBudgetRequest
   public decimal? FinalProductQuantity { get; set; }
   public decimal? FinalUnitPrice { get; set; }
   public decimal? FinalTotalValue { get; set; }
+  public List<CreateBudgetItemRequest>? Items { get; set; }
 }

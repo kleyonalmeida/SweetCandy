@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using static Application.Wrappers.IResponseWrapper;
 
 namespace Application.Wrappers;
@@ -22,7 +23,7 @@ public class ResponseWrapper : IResponseWrapper
     return new ResponseWrapper()
     {
       IsSuccessful = false,
-      Messages = [message]
+      Messages = new List<string> { message }
     };
   }
 
@@ -57,7 +58,7 @@ public class ResponseWrapper : IResponseWrapper
 
   public static IResponseWrapper Success(string message)
   {
-    return new ResponseWrapper { IsSuccessful = true, Messages = [message] };
+    return new ResponseWrapper { IsSuccessful = true, Messages = new List<string> { message } };
   }
 
   public static IResponseWrapper Success(List<string> messages)
@@ -84,7 +85,7 @@ public class ResponseWrapper : IResponseWrapper
 public class ResponseWrapper<T> : ResponseWrapper, IResponseWrapper<T>
 {
   public ResponseWrapper() { }
-  public T Data { get; set; }
+  public T? Data { get; set; }
 
   public new static ResponseWrapper<T> Fail()
   {
@@ -92,7 +93,7 @@ public class ResponseWrapper<T> : ResponseWrapper, IResponseWrapper<T>
   }
   public new static ResponseWrapper<T> Fail(string message)
   {
-    return new ResponseWrapper<T> { IsSuccessful = false, Messages = [message] };
+    return new ResponseWrapper<T> { IsSuccessful = false, Messages = new List<string> { message } };
   }
   public new static ResponseWrapper<T> Fail(List<string> messages)
   {
@@ -117,7 +118,7 @@ public class ResponseWrapper<T> : ResponseWrapper, IResponseWrapper<T>
   }
   public new static ResponseWrapper<T> Success(string message)
   {
-    return new ResponseWrapper<T> { IsSuccessful = true, Messages = [message] };
+    return new ResponseWrapper<T> { IsSuccessful = true, Messages = new List<string> { message } };
   }
   public static ResponseWrapper<T> Success(T data)
   {
@@ -125,7 +126,7 @@ public class ResponseWrapper<T> : ResponseWrapper, IResponseWrapper<T>
   }
   public static ResponseWrapper<T> Success(T data, string message)
   {
-    return new ResponseWrapper<T> { IsSuccessful = true, Data = data, Messages = [message] };
+    return new ResponseWrapper<T> { IsSuccessful = true, Data = data, Messages = new List<string> { message } };
   }
   public static ResponseWrapper<T> Success(T data, List<string> messages)
   {
