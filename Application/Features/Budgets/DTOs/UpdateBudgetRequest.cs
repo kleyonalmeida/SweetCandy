@@ -1,4 +1,4 @@
-namespace Application.Features.Budget.DTOs;
+namespace Application.Features.Budgets.DTOs;
 
 using System.Collections.Generic;
 

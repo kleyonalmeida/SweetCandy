@@ -1,3 +1,7 @@
-namespace Application.Features.Budget.Commands;
+using Application.Pipelines;
+using Application.Wrappers;
+using MediatR;
 
-public record DeleteBudgetCommand(string Id);
+namespace Application.Features.Budgets.Commands;
+
+public record DeleteBudgetCommand(string Id) : IRequest<IResponseWrapper>, IValidateMe;
