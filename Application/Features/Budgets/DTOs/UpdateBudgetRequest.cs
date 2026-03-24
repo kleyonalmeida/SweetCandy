@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System;
+
 namespace Application.Features.Budgets.DTOs;
 
 public class UpdateBudgetRequest
