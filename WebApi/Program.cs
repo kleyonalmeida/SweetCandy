@@ -1,14 +1,33 @@
-using System;
-using Domain.Entities;
+using Application.Features.Budgets;
+using Application.Features.Budgets.Commands;
+using Application.Features.Inventories;
+using Application.Features.Orders;
+using Application.Features.Receipts;
+using Application.Pipelines;
+using FluentValidation;
+using Infrastructure.Budgets;
+using Infrastructure.Inventories;
+using Infrastructure.Orders;
+using Infrastructure.Receipts;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 
-internal class Program
-{
-  private static void Main(string[] args)
-  {
-    Console.WriteLine("SweetCandy - WebApi (projeto mínimo)");
+var builder = WebApplication.CreateBuilder(args);
 
-    // Exemplo de uso rápido (apenas para build): criar uma instância de entidade.
-    var insumo = new Supply { Name = "Açúcar", Quantity = 10m, Price = 5m };
-    Console.WriteLine($"Insumo: {insumo.Name}, qtd={insumo.Quantity}, price={insumo.Price}");
-  }
-}
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateBudgetCommand).Assembly));
+builder.Services.AddValidatorsFromAssembly(typeof(CreateBudgetCommand).Assembly);
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBenaviour<,>));
+
+builder.Services.AddSingleton<IBudgetService, BudgetService>();
+builder.Services.AddSingleton<IInventoryService, InventoryService>();
+builder.Services.AddSingleton<IOrdersService, OrderService>();
+builder.Services.AddSingleton<IReceiptsService, ReceiptService>();
+
+var app = builder.Build();
+
+app.MapControllers();
+app.MapGet("/", () => Results.Ok(new { message = "SweetCandy API online" }));
+
+app.Run();

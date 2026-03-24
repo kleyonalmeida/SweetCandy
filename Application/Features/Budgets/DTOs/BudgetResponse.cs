@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using Domain.Entities;
 
 namespace Application.Features.Budgets.DTOs;
 
@@ -13,6 +13,6 @@ public class BudgetResponse
   public decimal? FinalProductQuantity { get; set; }
   public decimal? FinalUnitPrice { get; set; }
   public decimal? FinalTotalValue { get; set; }
-  public List<BudgetItem>? Items { get; set; }
+  public List<BudgetItemResponse> Items { get; set; } = [];
 }
 

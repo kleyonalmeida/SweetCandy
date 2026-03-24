@@ -15,5 +15,16 @@ public class UpdateBudgetCommandValidator : AbstractValidator<UpdateBudgetComman
 
     RuleFor(command => command.UpdateBudget.FinalProductQuantity)
       .GreaterThan(0).When(c => c.UpdateBudget.FinalProductQuantity.HasValue);
+
+    RuleForEach(command => command.UpdateBudget.Items)
+      .ChildRules(item =>
+      {
+        item.RuleFor(budgetItem => budgetItem.Quantity)
+          .GreaterThan(0);
+
+        item.RuleFor(budgetItem => budgetItem.FinalProductName)
+          .NotEmpty()
+          .When(budgetItem => string.IsNullOrWhiteSpace(budgetItem.FinalProductId));
+      });
   }
 }

@@ -15,5 +15,16 @@ public class CreateBudgetCommandValidator : AbstractValidator<CreateBudgetComman
 
     RuleFor(command => command.CreateBudget.FinalProductQuantity)
       .GreaterThan(0).When(c => c.CreateBudget.FinalProductQuantity.HasValue);
+
+    RuleForEach(command => command.CreateBudget.Items)
+      .ChildRules(item =>
+      {
+        item.RuleFor(budgetItem => budgetItem.Quantity)
+          .GreaterThan(0);
+
+        item.RuleFor(budgetItem => budgetItem.FinalProductName)
+          .NotEmpty()
+          .When(budgetItem => string.IsNullOrWhiteSpace(budgetItem.FinalProductId));
+      });
   }
 }

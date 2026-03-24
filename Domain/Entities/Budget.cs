@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Domain.Entities;
 
@@ -13,5 +14,5 @@ public class Budget : BaseEntity
   public decimal? FinalProductQuantity { get; set; }
   public decimal? FinalUnitPrice { get; set; }
   public decimal? FinalTotalValue { get; set; }
-
+  public ICollection<BudgetItem> Items { get; set; } = [];
 }

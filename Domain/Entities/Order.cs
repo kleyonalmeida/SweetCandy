@@ -6,6 +6,7 @@ namespace Domain.Entities;
 
 public class Order : BaseEntity
 {
+  public string Name { get; set; } = string.Empty;
   public string? CustomerId { get; set; }
   public Customer? Customer { get; set; }
   public DateTime? EventDate { get; set; }

@@ -1,0 +1,4 @@
+/home/kley/SweetCandy/Domain/obj/Debug/net7.0/Domain.GeneratedMSBuildEditorConfig.editorconfig
+/home/kley/SweetCandy/Domain/obj/Debug/net7.0/Domain.AssemblyInfoInputs.cache
+/home/kley/SweetCandy/Domain/obj/Debug/net7.0/Domain.AssemblyInfo.cs
+/home/kley/SweetCandy/Domain/obj/Debug/net7.0/Domain.csproj.CoreCompileInputs.cache
