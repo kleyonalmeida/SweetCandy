@@ -1,3 +1,3 @@
-namespace Application.Features.Budget.Commands;
+namespace Application.Features.Budgets.Commands;
 
 public record DeleteBudgetCommand(string Id);

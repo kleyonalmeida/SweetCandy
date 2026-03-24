@@ -18,3 +18,15 @@
 /home/kley/SweetCandy/WebApi/obj/Debug/net8.0/WebApi.pdb
 /home/kley/SweetCandy/WebApi/obj/Debug/net8.0/WebApi.genruntimeconfig.cache
 /home/kley/SweetCandy/WebApi/obj/Debug/net8.0/ref/WebApi.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/FluentValidation.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/FluentValidation.DependencyInjectionExtensions.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/MediatR.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/MediatR.Contracts.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/home/kley/SweetCandy/WebApi/bin/Debug/net8.0/System.Diagnostics.DiagnosticSource.dll
+/home/kley/SweetCandy/WebApi/obj/Debug/net8.0/WebApi.sourcelink.json

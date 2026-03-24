@@ -1,6 +1,4 @@
-namespace Application.Features.Budget.DTOs;
-
-using System.Collections.Generic;
+namespace Application.Features.Budgets.DTOs;
 
 public class UpdateBudgetRequest
 {
@@ -11,5 +9,4 @@ public class UpdateBudgetRequest
   public decimal? FinalProductQuantity { get; set; }
   public decimal? FinalUnitPrice { get; set; }
   public decimal? FinalTotalValue { get; set; }
-  public List<CreateBudgetItemRequest>? Items { get; set; }
 }
