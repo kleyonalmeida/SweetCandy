@@ -54,4 +54,12 @@ public class InventoriesController(ISender sender) : ApiControllerBase
   [HttpDelete("final-products/{id}")]
   public async Task<IActionResult> DeleteFinalProduct(string id)
     => FromResponse(await _sender.Send(new DeleteFinalProductCommand(id)));
+
+  [HttpPost("supplies/{id}/adjustments")]
+  public async Task<IActionResult> AdjustSupplyStock(string id, [FromBody] AdjustSupplyStockRequest request)
+    => FromResponse(await _sender.Send(new AdjustSupplyStockCommand(id, request)));
+
+  [HttpGet("stock-movements")]
+  public async Task<IActionResult> GetStockMovements([FromQuery] string? supplyId = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    => FromResponse(await _sender.Send(new GetStockMovementsQuery(supplyId, page, pageSize)));
 }

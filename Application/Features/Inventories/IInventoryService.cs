@@ -1,3 +1,4 @@
+using Application.Features.Inventories.DTOs;
 using Domain.Entities;
 
 namespace Application.Features.Inventories;
@@ -16,4 +17,7 @@ public interface IInventoryService
   Task<string> CreateFinalProductAsync(FinalProduct finalProduct);
   Task<string> UpdateFinalProductAsync(FinalProduct finalProduct);
   Task<string> DeleteFinalProductAsync(FinalProduct finalProduct);
+
+  Task<(string? Error, AdjustSupplyStockResponse? Result)> AdjustSupplyStockAsync(string supplyId, decimal quantity, bool add, string? notes);
+  Task<List<StockMovement>> GetStockMovementsAsync(string? supplyId);
 }

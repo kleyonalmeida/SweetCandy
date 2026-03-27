@@ -1,0 +1,37 @@
+using Application.Features.Expenses.Commands;
+using Application.Features.Expenses.DTOs;
+using Application.Features.Expenses.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebApi.Controllers;
+
+[Route("api/[controller]")]
+public class ExpensesController(ISender sender) : ApiControllerBase
+{
+  private readonly ISender _sender = sender;
+
+  [HttpGet]
+  public async Task<IActionResult> GetAll(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20,
+    [FromQuery] DateTime? from = null,
+    [FromQuery] DateTime? to = null)
+    => FromResponse(await _sender.Send(new GetExpensesQuery(page, pageSize, from, to)));
+
+  [HttpGet("{id}")]
+  public async Task<IActionResult> GetById(string id)
+    => FromResponse(await _sender.Send(new GetExpenseByIdQuery(id)));
+
+  [HttpPost]
+  public async Task<IActionResult> Create([FromBody] CreateExpenseRequest request)
+    => FromResponse(await _sender.Send(new CreateExpenseCommand(request)));
+
+  [HttpPut("{id}")]
+  public async Task<IActionResult> Update(string id, [FromBody] UpdateExpenseRequest request)
+    => FromResponse(await _sender.Send(new UpdateExpenseCommand(id, request)));
+
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> Delete(string id)
+    => FromResponse(await _sender.Send(new DeleteExpenseCommand(id)));
+}

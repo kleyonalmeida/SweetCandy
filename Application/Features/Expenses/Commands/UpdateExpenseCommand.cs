@@ -1,0 +1,31 @@
+using Application.Common.Mappings;
+using Application.Features.Expenses.DTOs;
+using Application.Pipelines;
+using Application.Wrappers;
+using Mapster;
+using MediatR;
+
+namespace Application.Features.Expenses.Commands;
+
+public record UpdateExpenseCommand(string Id, UpdateExpenseRequest UpdateExpense) : IRequest<IResponseWrapper>, IValidateMe;
+
+public class UpdateExpenseCommandHandler(IExpenseService expenseService) : IRequestHandler<UpdateExpenseCommand, IResponseWrapper>
+{
+  private readonly IExpenseService _expenseService = expenseService;
+
+  public async Task<IResponseWrapper> Handle(UpdateExpenseCommand request, CancellationToken cancellationToken)
+  {
+    var expense = await _expenseService.GetByIdAsync(request.Id);
+    if (expense is null)
+      return await ResponseWrapper.FailAsync("Despesa nao encontrada.");
+
+    request.UpdateExpense.Adapt(expense, MapsterSettings.IgnoreNullValues);
+    expense.UpdatedAt = DateTime.UtcNow;
+
+    var message = await _expenseService.UpdateAsync(expense);
+    if (!string.IsNullOrWhiteSpace(message))
+      return await ResponseWrapper.FailAsync(message);
+
+    return await ResponseWrapper.SuccessAsync("Despesa atualizada com sucesso.");
+  }
+}
