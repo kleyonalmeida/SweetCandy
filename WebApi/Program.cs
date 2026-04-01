@@ -4,6 +4,7 @@ using Application.Features.Categories;
 using Application.Features.Customers;
 using Application.Features.Expenses;
 using Application.Features.Inventories;
+using Application.Features.MonthlyGoals;
 using Application.Features.Orders;
 using Application.Features.Receipts;
 using Application.Features.StockMovements;
@@ -14,6 +15,7 @@ using Infrastructure.Categories;
 using Infrastructure.Customers;
 using Infrastructure.Expenses;
 using Infrastructure.Inventories;
+using Infrastructure.MonthlyGoals;
 using Infrastructure.Orders;
 using Infrastructure.Persistence;
 using Infrastructure.Receipts;
@@ -49,6 +51,7 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IStockMovementService, StockMovementService>();
+builder.Services.AddScoped<IMonthlyGoalService, MonthlyGoalService>();
 
 var app = builder.Build();
 

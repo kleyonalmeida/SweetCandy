@@ -28,6 +28,8 @@ public class ExpenseService(AppDbContext context) : IExpenseService
     existing.Value = expense.Value;
     existing.Paid = expense.Paid;
     existing.TotalExpense = expense.TotalExpense;
+    existing.Date = expense.Date;
+    existing.Category = expense.Category;
     existing.UpdatedAt = DateTime.UtcNow;
     await _context.SaveChangesAsync();
     return string.Empty;
@@ -49,4 +51,3 @@ public class ExpenseService(AppDbContext context) : IExpenseService
   public async Task<List<Expense>> GetAllAsync()
     => await _context.Expenses.ToListAsync();
 }
-

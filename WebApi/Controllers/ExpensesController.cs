@@ -12,8 +12,12 @@ public class ExpensesController(ISender sender) : ApiControllerBase
   private readonly ISender _sender = sender;
 
   [HttpGet("GetAll")]
-  public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-    => FromResponse(await _sender.Send(new GetExpensesQuery(page, pageSize)));
+  public async Task<IActionResult> GetAll(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20,
+    [FromQuery] DateTime? from = null,
+    [FromQuery] DateTime? to = null)
+    => FromResponse(await _sender.Send(new GetExpensesQuery(page, pageSize, from, to)));
 
   [HttpGet("GetById/{id}")]
   public async Task<IActionResult> GetById(string id)

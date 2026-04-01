@@ -7,4 +7,8 @@ public class ExpenseResponse
   public decimal? Value { get; set; }
   public bool Paid { get; set; }
   public decimal? TotalExpense { get; set; }
+  public DateTime Date { get; set; }
+  public string? Category { get; set; }
+  public DateTime CreatedAt { get; set; }
+  public DateTime UpdatedAt { get; set; }
 }

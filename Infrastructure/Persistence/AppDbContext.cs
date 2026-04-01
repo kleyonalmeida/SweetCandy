@@ -18,6 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
   public DbSet<Inventory> Inventories => Set<Inventory>();
   public DbSet<StockMovement> StockMovements => Set<StockMovement>();
   public DbSet<Receipt> Receipts => Set<Receipt>();
+  public DbSet<MonthlyGoal> MonthlyGoals => Set<MonthlyGoal>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
