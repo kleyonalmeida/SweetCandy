@@ -1,98 +1,169 @@
 using Application.Features.Inventories;
 using Domain.Entities;
+using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Inventories;
 
-public class InventoryService : IInventoryService
+public class InventoryService(AppDbContext context) : IInventoryService
 {
-  private static readonly Inventory Inventory = new();
-  private static readonly List<Supply> Supplies = [];
-  private static readonly List<FinalProduct> FinalProducts = [];
+  private readonly AppDbContext _context = context;
 
-  public Task<Inventory?> GetInventoryAsync()
+  // ── Inventory ────────────────────────────────────────────────────────────
+  public async Task<Inventory?> GetInventoryAsync()
   {
-    Inventory.Supplies = Supplies.ToList();
-    Inventory.TotalInvested = Supplies.Sum(supply => (supply.Price ?? 0m) * (supply.Quantity ?? 0m));
-    return Task.FromResult<Inventory?>(Inventory);
+    var inventory = await _context.Inventories
+      .Include(i => i.Supplies)
+      .FirstOrDefaultAsync();
+
+    if (inventory is null)
+    {
+      inventory = new Inventory { Id = Guid.NewGuid().ToString() };
+      _context.Inventories.Add(inventory);
+      await _context.SaveChangesAsync();
+    }
+
+    inventory.TotalInvested = inventory.Supplies
+      .Sum(s => (s.Price ?? 0m) * (s.Quantity ?? 0m));
+
+    return inventory;
   }
 
-  public Task<List<Supply>> GetSuppliesAsync()
+  private async Task<Inventory> GetOrCreateInventoryAsync()
   {
-    return Task.FromResult(Supplies.ToList());
+    var inventory = await _context.Inventories.FirstOrDefaultAsync();
+    if (inventory is null)
+    {
+      inventory = new Inventory { Id = Guid.NewGuid().ToString() };
+      _context.Inventories.Add(inventory);
+      await _context.SaveChangesAsync();
+    }
+    return inventory;
   }
 
-  public Task<Supply?> GetSupplyByIdAsync(string supplyId)
-  {
-    return Task.FromResult(Supplies.FirstOrDefault(supply => supply.Id == supplyId));
-  }
+  // ── Supplies ──────────────────────────────────────────────────────────────
+  public async Task<List<Supply>> GetSuppliesAsync()
+    => await _context.Supplies.ToListAsync();
 
-  public Task<string> CreateSupplyAsync(Supply supply)
+  public async Task<Supply?> GetSupplyByIdAsync(string supplyId)
+    => await _context.Supplies.FindAsync(supplyId);
+
+  public async Task<string> CreateSupplyAsync(Supply supply)
   {
     supply.Id = Guid.NewGuid().ToString();
     supply.CreatedAt = DateTime.UtcNow;
     supply.UpdatedAt = DateTime.UtcNow;
-
     if (string.IsNullOrWhiteSpace(supply.InventoryId))
-      supply.InventoryId = Inventory.Id;
-
-    Supplies.Add(supply);
-    return Task.FromResult(supply.Id);
+    {
+      var inv = await GetOrCreateInventoryAsync();
+      supply.InventoryId = inv.Id;
+    }
+    _context.Supplies.Add(supply);
+    await _context.SaveChangesAsync();
+    return supply.Id;
   }
 
-  public Task<string> UpdateSupplyAsync(Supply supply)
+  public async Task<string> UpdateSupplyAsync(Supply supply)
   {
-    var existingSupply = Supplies.FirstOrDefault(currentSupply => currentSupply.Id == supply.Id);
-
-    if (existingSupply is null)
-      return Task.FromResult("Insumo nao encontrado.");
-
-    var index = Supplies.IndexOf(existingSupply);
-    supply.UpdatedAt = DateTime.UtcNow;
-    Supplies[index] = supply;
-    return Task.FromResult(string.Empty);
+    var existing = await _context.Supplies.FindAsync(supply.Id);
+    if (existing is null)
+      return "Insumo nao encontrado.";
+    existing.Name = supply.Name;
+    existing.Quantity = supply.Quantity;
+    existing.Price = supply.Price;
+    existing.Unit = supply.Unit;
+    existing.UpdatedAt = DateTime.UtcNow;
+    await _context.SaveChangesAsync();
+    return string.Empty;
   }
 
-  public Task<string> DeleteSupplyAsync(Supply supply)
+  public async Task<string> DeleteSupplyAsync(Supply supply)
   {
-    var removed = Supplies.RemoveAll(currentSupply => currentSupply.Id == supply.Id) > 0;
-    return Task.FromResult(removed ? string.Empty : "Insumo nao encontrado.");
+    var existing = await _context.Supplies.FindAsync(supply.Id);
+    if (existing is null)
+      return "Insumo nao encontrado.";
+    _context.Supplies.Remove(existing);
+    await _context.SaveChangesAsync();
+    return string.Empty;
   }
 
-  public Task<List<FinalProduct>> GetFinalProductsAsync()
-  {
-    return Task.FromResult(FinalProducts.ToList());
-  }
+  // ── FinalProducts ─────────────────────────────────────────────────────────
+  public async Task<List<FinalProduct>> GetFinalProductsAsync()
+    => await _context.FinalProducts
+      .Include(fp => fp.Recipe)
+      .ToListAsync();
 
-  public Task<FinalProduct?> GetFinalProductByIdAsync(string finalProductId)
-  {
-    return Task.FromResult(FinalProducts.FirstOrDefault(finalProduct => finalProduct.Id == finalProductId));
-  }
+  public async Task<FinalProduct?> GetFinalProductByIdAsync(string finalProductId)
+    => await _context.FinalProducts
+      .Include(fp => fp.Recipe)
+        .ThenInclude(r => r.Supply)
+      .FirstOrDefaultAsync(fp => fp.Id == finalProductId);
 
-  public Task<string> CreateFinalProductAsync(FinalProduct finalProduct)
+  public async Task<string> CreateFinalProductAsync(FinalProduct finalProduct)
   {
     finalProduct.Id = Guid.NewGuid().ToString();
     finalProduct.CreatedAt = DateTime.UtcNow;
     finalProduct.UpdatedAt = DateTime.UtcNow;
-    FinalProducts.Add(finalProduct);
-    return Task.FromResult(finalProduct.Id);
+    _context.FinalProducts.Add(finalProduct);
+    await _context.SaveChangesAsync();
+    return finalProduct.Id;
   }
 
-  public Task<string> UpdateFinalProductAsync(FinalProduct finalProduct)
+  public async Task<string> UpdateFinalProductAsync(FinalProduct finalProduct)
   {
-    var existingFinalProduct = FinalProducts.FirstOrDefault(currentFinalProduct => currentFinalProduct.Id == finalProduct.Id);
-
-    if (existingFinalProduct is null)
-      return Task.FromResult("Produto final nao encontrado.");
-
-    var index = FinalProducts.IndexOf(existingFinalProduct);
-    finalProduct.UpdatedAt = DateTime.UtcNow;
-    FinalProducts[index] = finalProduct;
-    return Task.FromResult(string.Empty);
+    var existing = await _context.FinalProducts.FindAsync(finalProduct.Id);
+    if (existing is null)
+      return "Produto final nao encontrado.";
+    existing.Name = finalProduct.Name;
+    existing.Description = finalProduct.Description;
+    existing.CategoryId = finalProduct.CategoryId;
+    existing.CostPrice = finalProduct.CostPrice;
+    existing.UnitPrice = finalProduct.UnitPrice;
+    existing.QuantityAvailable = finalProduct.QuantityAvailable;
+    existing.UpdatedAt = DateTime.UtcNow;
+    await _context.SaveChangesAsync();
+    return string.Empty;
   }
 
-  public Task<string> DeleteFinalProductAsync(FinalProduct finalProduct)
+  public async Task<string> DeleteFinalProductAsync(FinalProduct finalProduct)
   {
-    var removed = FinalProducts.RemoveAll(currentFinalProduct => currentFinalProduct.Id == finalProduct.Id) > 0;
-    return Task.FromResult(removed ? string.Empty : "Produto final nao encontrado.");
+    var existing = await _context.FinalProducts.FindAsync(finalProduct.Id);
+    if (existing is null)
+      return "Produto final nao encontrado.";
+    _context.FinalProducts.Remove(existing);
+    await _context.SaveChangesAsync();
+    return string.Empty;
+  }
+
+  // ── Recipe ────────────────────────────────────────────────────────────────
+  public async Task<List<RecipeItem>> GetRecipeAsync(string finalProductId)
+    => await _context.RecipeItems
+      .Include(r => r.Supply)
+      .Where(r => r.FinalProductId == finalProductId)
+      .ToListAsync();
+
+  public async Task<RecipeItem?> GetRecipeItemByIdAsync(string recipeItemId)
+    => await _context.RecipeItems
+      .Include(r => r.Supply)
+      .FirstOrDefaultAsync(r => r.Id == recipeItemId);
+
+  public async Task<string> AddRecipeItemAsync(RecipeItem item)
+  {
+    item.Id = Guid.NewGuid().ToString();
+    item.CreatedAt = DateTime.UtcNow;
+    item.UpdatedAt = DateTime.UtcNow;
+    _context.RecipeItems.Add(item);
+    await _context.SaveChangesAsync();
+    return item.Id;
+  }
+
+  public async Task<string> RemoveRecipeItemAsync(string recipeItemId)
+  {
+    var existing = await _context.RecipeItems.FindAsync(recipeItemId);
+    if (existing is null)
+      return "Item da receita nao encontrado.";
+    _context.RecipeItems.Remove(existing);
+    await _context.SaveChangesAsync();
+    return string.Empty;
   }
 }

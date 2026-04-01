@@ -11,5 +11,5 @@ public class FinalProduct : BaseEntity
   public decimal? CostPrice { get; set; }
   public decimal? UnitPrice { get; set; }
   public decimal? QuantityAvailable { get; set; }
-  public List<Supply> Recipe { get; set; } = new List<Supply>();
+  public List<RecipeItem> Recipe { get; set; } = new List<RecipeItem>();
 }

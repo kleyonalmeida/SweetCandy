@@ -1,8 +1,11 @@
 using Application.Features.Orders.DTOs;
 using Application.Common.Mappings;
+using Application.Features.Receipts;
+using Application.Features.StockMovements;
 using Application.Pipelines;
 using Application.Wrappers;
 using Domain.Entities;
+using Domain.Enums;
 using Mapster;
 using MediatR;
 
@@ -10,9 +13,14 @@ namespace Application.Features.Orders.Commands;
 
 public record UpdateOrderCommand(string Id, UpdateOrderRequest UpdateOrder) : IRequest<IResponseWrapper>, IValidateMe;
 
-public class UpdateOrderCommandHandler(IOrdersService ordersService) : IRequestHandler<UpdateOrderCommand, IResponseWrapper>
+public class UpdateOrderCommandHandler(
+  IOrdersService ordersService,
+  IStockMovementService stockMovementService,
+  IReceiptsService receiptsService) : IRequestHandler<UpdateOrderCommand, IResponseWrapper>
 {
   private readonly IOrdersService _ordersService = ordersService;
+  private readonly IStockMovementService _stockMovementService = stockMovementService;
+  private readonly IReceiptsService _receiptsService = receiptsService;
 
   public async Task<IResponseWrapper> Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
   {
@@ -21,12 +29,44 @@ public class UpdateOrderCommandHandler(IOrdersService ordersService) : IRequestH
     if (order is null)
       return await ResponseWrapper.FailAsync("Pedido nao encontrado.");
 
+    var previousStatus = order.Status;
+
     ApplyUpdates(order, request.UpdateOrder);
 
     var serviceMessage = await _ordersService.UpdateAsync(order);
     var successMessage = string.IsNullOrWhiteSpace(serviceMessage)
       ? "Pedido atualizado com sucesso."
       : serviceMessage;
+
+    if (previousStatus != StatusOrder.Confirmada && order.Status == StatusOrder.Confirmada)
+    {
+      foreach (var item in order.Items)
+      {
+        var movement = new StockMovement
+        {
+          SupplyId = item.FinalProductId,
+          Quantity = item.Quantity,
+          Type = MovementType.Saida,
+          OrderId = order.Id,
+          Notes = $"Baixa automatica de estoque para o pedido {order.Id}"
+        };
+        await _stockMovementService.CreateAsync(movement);
+      }
+    }
+
+    if (previousStatus != StatusOrder.Concluida && order.Status == StatusOrder.Concluida)
+    {
+      var receipt = new Receipt
+      {
+        Date = DateTime.UtcNow,
+        Amount = order.TotalValue ?? 0m,
+        Description = $"Recebimento automatico do pedido {order.Id}",
+        OrderId = order.Id,
+        CustomerId = order.CustomerId,
+        PaymentMethod = FormaPagamento.Dinheiro
+      };
+      await _receiptsService.CreateAsync(receipt);
+    }
 
     return await ResponseWrapper.SuccessAsync(successMessage);
   }
@@ -66,5 +106,4 @@ public class UpdateOrderCommandHandler(IOrdersService ordersService) : IRequestH
       })
       .ToList();
   }
-
 }

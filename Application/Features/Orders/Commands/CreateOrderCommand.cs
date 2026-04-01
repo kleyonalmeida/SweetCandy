@@ -1,3 +1,5 @@
+using Application.Features.Customers;
+using Application.Features.Inventories;
 using Application.Features.Orders.DTOs;
 using Application.Pipelines;
 using Application.Wrappers;
@@ -12,12 +14,34 @@ public class CreateOrderCommand(CreateOrderRequest createOrder) : IRequest<IResp
   public CreateOrderRequest CreateOrder { get; set; } = createOrder;
 }
 
-public class CreateOrderCommandHandler(IOrdersService ordersService) : IRequestHandler<CreateOrderCommand, IResponseWrapper>
+public class CreateOrderCommandHandler(
+  IOrdersService ordersService,
+  ICustomerService customerService,
+  IInventoryService inventoryService) : IRequestHandler<CreateOrderCommand, IResponseWrapper>
 {
   private readonly IOrdersService _ordersService = ordersService;
+  private readonly ICustomerService _customerService = customerService;
+  private readonly IInventoryService _inventoryService = inventoryService;
 
   public async Task<IResponseWrapper> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
   {
+    if (!string.IsNullOrWhiteSpace(request.CreateOrder.CustomerId))
+    {
+      var customer = await _customerService.GetByIdAsync(request.CreateOrder.CustomerId);
+      if (customer is null)
+        return await ResponseWrapper.FailAsync("Cliente nao encontrado.");
+    }
+
+    foreach (var item in request.CreateOrder.Items)
+    {
+      if (!string.IsNullOrWhiteSpace(item.FinalProductId))
+      {
+        var product = await _inventoryService.GetFinalProductByIdAsync(item.FinalProductId);
+        if (product is null)
+          return await ResponseWrapper.FailAsync($"Produto final '{item.FinalProductId}' nao encontrado.");
+      }
+    }
+
     var items = MapItems(request.CreateOrder.Items);
 
     var order = request.CreateOrder.Adapt<Order>();

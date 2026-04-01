@@ -16,4 +16,9 @@ public interface IInventoryService
   Task<string> CreateFinalProductAsync(FinalProduct finalProduct);
   Task<string> UpdateFinalProductAsync(FinalProduct finalProduct);
   Task<string> DeleteFinalProductAsync(FinalProduct finalProduct);
+
+  Task<List<RecipeItem>> GetRecipeAsync(string finalProductId);
+  Task<RecipeItem?> GetRecipeItemByIdAsync(string recipeItemId);
+  Task<string> AddRecipeItemAsync(RecipeItem item);
+  Task<string> RemoveRecipeItemAsync(string recipeItemId);
 }

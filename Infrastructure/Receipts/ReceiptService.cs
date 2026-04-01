@@ -1,47 +1,54 @@
 using Application.Features.Receipts;
 using Domain.Entities;
+using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Receipts;
 
-public class ReceiptService : IReceiptsService
+public class ReceiptService(AppDbContext context) : IReceiptsService
 {
-  private static readonly List<Receipt> Receipts = [];
+  private readonly AppDbContext _context = context;
 
-  public Task<string> CreateAsync(Receipt receipt)
+  public async Task<string> CreateAsync(Receipt receipt)
   {
     receipt.Id = Guid.NewGuid().ToString();
     receipt.CreatedAt = DateTime.UtcNow;
     receipt.UpdatedAt = DateTime.UtcNow;
-    Receipts.Add(receipt);
-    return Task.FromResult(receipt.Id);
+    _context.Receipts.Add(receipt);
+    await _context.SaveChangesAsync();
+    return receipt.Id;
   }
 
-  public Task<string> UpdateAsync(Receipt receipt)
+  public async Task<string> UpdateAsync(Receipt receipt)
   {
-    var existingReceipt = Receipts.FirstOrDefault(currentReceipt => currentReceipt.Id == receipt.Id);
-
-    if (existingReceipt is null)
-      return Task.FromResult("Recebimento nao encontrado.");
-
-    var index = Receipts.IndexOf(existingReceipt);
-    receipt.UpdatedAt = DateTime.UtcNow;
-    Receipts[index] = receipt;
-    return Task.FromResult(string.Empty);
+    var existing = await _context.Receipts.FindAsync(receipt.Id);
+    if (existing is null)
+      return "Recebimento nao encontrado.";
+    existing.Date = receipt.Date;
+    existing.FinalProductName = receipt.FinalProductName;
+    existing.Amount = receipt.Amount;
+    existing.Description = receipt.Description;
+    existing.PaymentMethod = receipt.PaymentMethod;
+    existing.OrderId = receipt.OrderId;
+    existing.CustomerId = receipt.CustomerId;
+    existing.UpdatedAt = DateTime.UtcNow;
+    await _context.SaveChangesAsync();
+    return string.Empty;
   }
 
-  public Task<string> DeleteAsync(Receipt receipt)
+  public async Task<string> DeleteAsync(Receipt receipt)
   {
-    var removed = Receipts.RemoveAll(currentReceipt => currentReceipt.Id == receipt.Id) > 0;
-    return Task.FromResult(removed ? string.Empty : "Recebimento nao encontrado.");
+    var existing = await _context.Receipts.FindAsync(receipt.Id);
+    if (existing is null)
+      return "Recebimento nao encontrado.";
+    _context.Receipts.Remove(existing);
+    await _context.SaveChangesAsync();
+    return string.Empty;
   }
 
-  public Task<Receipt?> GetByIdAsync(string receiptId)
-  {
-    return Task.FromResult(Receipts.FirstOrDefault(currentReceipt => currentReceipt.Id == receiptId));
-  }
+  public async Task<Receipt?> GetByIdAsync(string receiptId)
+    => await _context.Receipts.FindAsync(receiptId);
 
-  public Task<List<Receipt>> GetAllAsync()
-  {
-    return Task.FromResult(Receipts.ToList());
-  }
+  public async Task<List<Receipt>> GetAllAsync()
+    => await _context.Receipts.ToListAsync();
 }

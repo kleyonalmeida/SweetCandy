@@ -9,7 +9,7 @@ public class OrderResponse
   public string? CustomerId { get; set; }
   public DateTime? EventDate { get; set; }
   public StatusOrder Status { get; set; }
-  public int? Sinal { get; set; }
+  public decimal? Sinal { get; set; }
   public decimal? TotalValue { get; set; }
   public List<OrderItemResponse> Items { get; set; } = new();
 }

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SweetCandy — Gestão Profissional</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><i class="fa-solid fa-candy-cane"></i></div>
+      <div>
+        <div class="brand-name">SweetCandy</div>
+        <div class="brand-sub">Gestão profissional</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-page="dashboard">
+        <i class="fa-solid fa-chart-pie nav-icon"></i><span>Painel</span>
+      </a>
+      <a class="nav-item" data-page="financas">
+        <i class="fa-solid fa-wallet nav-icon"></i><span>Finanças</span>
+      </a>
+      <a class="nav-item" data-page="pedidos">
+        <i class="fa-solid fa-clipboard-list nav-icon"></i><span>Pedidos</span>
+      </a>
+      <a class="nav-item" data-page="estoque">
+        <i class="fa-solid fa-boxes-stacked nav-icon"></i><span>Estoque</span>
+      </a>
+      <a class="nav-item" data-page="orcamentos">
+        <i class="fa-solid fa-file-invoice nav-icon"></i><span>Orçamentos</span>
+      </a>
+      <a class="nav-item" data-page="clientes">
+        <i class="fa-solid fa-users nav-icon"></i><span>Clientes</span>
+      </a>
+      <a class="nav-item" data-page="categorias">
+        <i class="fa-solid fa-tags nav-icon"></i><span>Categorias</span>
+      </a>
+      <a class="nav-item" data-page="recibos">
+        <i class="fa-solid fa-receipt nav-icon"></i><span>Recibos</span>
+      </a>
+      <a class="nav-item" data-page="despesas">
+        <i class="fa-solid fa-arrow-trend-down nav-icon"></i><span>Despesas</span>
+      </a>
+      <a class="nav-item" data-page="movimentacoes">
+        <i class="fa-solid fa-arrow-right-arrow-left nav-icon"></i><span>Movimentações</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <i class="fa-solid fa-code nav-icon"></i>
+      <a href="/swagger" target="_blank" style="color:var(--text-muted);font-size:.8rem;">Swagger API</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <button class="btn-menu" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <span class="topbar-title" id="topbar-title">Painel</span>
+      <div class="topbar-right">
+        <span id="topbar-date"></span>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+      <!-- páginas renderizadas via JS -->
+    </main>
+  </div>
+
+  <!-- MODAL GLOBAL -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Título</h2>
+      <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

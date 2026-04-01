@@ -8,7 +8,7 @@ public class UpdateOrderRequest
   public string? CustomerId { get; set; }
   public DateTime? EventDate { get; set; }
   public StatusOrder? Status { get; set; }
-  public int? Sinal { get; set; }
+  public decimal? Sinal { get; set; }
   public decimal? TotalValue { get; set; }
   public List<CreateOrderItemRequest> Items { get; set; } = new();
 }

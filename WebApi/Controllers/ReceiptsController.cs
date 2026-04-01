@@ -11,23 +11,23 @@ public class ReceiptsController(ISender sender) : ApiControllerBase
 {
   private readonly ISender _sender = sender;
 
-  [HttpGet]
+  [HttpGet("GetAll")]
   public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     => FromResponse(await _sender.Send(new GetReceiptsQuery(page, pageSize)));
 
-  [HttpGet("{id}")]
+  [HttpGet("GetById/{id}")]
   public async Task<IActionResult> GetById(string id)
     => FromResponse(await _sender.Send(new GetReceiptByIdQuery(id)));
 
-  [HttpPost]
+  [HttpPost("Create")]
   public async Task<IActionResult> Create([FromBody] CreateReceiptRequest request)
     => FromResponse(await _sender.Send(new CreateReceiptCommand(request)));
 
-  [HttpPut("{id}")]
+  [HttpPut("Update/{id}")]
   public async Task<IActionResult> Update(string id, [FromBody] UpdateReceiptRequest request)
     => FromResponse(await _sender.Send(new UpdateReceiptCommand(id, request)));
 
-  [HttpDelete("{id}")]
+  [HttpDelete("Delete/{id}")]
   public async Task<IActionResult> Delete(string id)
     => FromResponse(await _sender.Send(new DeleteReceiptCommand(id)));
 }

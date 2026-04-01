@@ -11,7 +11,7 @@ public class Order : BaseEntity
   public Customer? Customer { get; set; }
   public DateTime? EventDate { get; set; }
   public StatusOrder Status { get; set; } = StatusOrder.Pendente;
-  public int? Sinal { get; set; }
+  public decimal? Sinal { get; set; }
   public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
   public decimal? TotalValue { get; set; }
 }

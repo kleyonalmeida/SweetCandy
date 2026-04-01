@@ -1,47 +1,82 @@
 using Application.Features.Orders;
 using Domain.Entities;
+using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Orders;
 
-public class OrderService : IOrdersService
+public class OrderService(AppDbContext context) : IOrdersService
 {
-  private static readonly List<Order> Orders = [];
+  private readonly AppDbContext _context = context;
 
-  public Task<string> CreateAsync(Order order)
+  public async Task<string> CreateAsync(Order order)
   {
     order.Id = Guid.NewGuid().ToString();
     order.CreatedAt = DateTime.UtcNow;
     order.UpdatedAt = DateTime.UtcNow;
-    Orders.Add(order);
-    return Task.FromResult(order.Id);
+    foreach (var item in order.Items)
+    {
+      item.Id = Guid.NewGuid().ToString();
+      item.OrderId = order.Id;
+      item.CreatedAt = DateTime.UtcNow;
+      item.UpdatedAt = DateTime.UtcNow;
+    }
+    _context.Orders.Add(order);
+    await _context.SaveChangesAsync();
+    return order.Id;
   }
 
-  public Task<string> UpdateAsync(Order order)
+  public async Task<string> UpdateAsync(Order order)
   {
-    var existingOrder = Orders.FirstOrDefault(currentOrder => currentOrder.Id == order.Id);
+    var existing = await _context.Orders
+      .Include(o => o.Items)
+      .FirstOrDefaultAsync(o => o.Id == order.Id);
 
-    if (existingOrder is null)
-      return Task.FromResult("Pedido nao encontrado.");
+    if (existing is null)
+      return "Pedido nao encontrado.";
 
-    var index = Orders.IndexOf(existingOrder);
-    order.UpdatedAt = DateTime.UtcNow;
-    Orders[index] = order;
-    return Task.FromResult(string.Empty);
+    existing.Name = order.Name;
+    existing.CustomerId = order.CustomerId;
+    existing.EventDate = order.EventDate;
+    existing.Status = order.Status;
+    existing.Sinal = order.Sinal;
+    existing.TotalValue = order.TotalValue;
+    existing.UpdatedAt = DateTime.UtcNow;
+
+    if (order.Items.Count > 0)
+    {
+      _context.OrderItems.RemoveRange(existing.Items);
+      foreach (var item in order.Items)
+      {
+        item.Id = Guid.NewGuid().ToString();
+        item.OrderId = existing.Id;
+        item.CreatedAt = DateTime.UtcNow;
+        item.UpdatedAt = DateTime.UtcNow;
+        existing.Items.Add(item);
+      }
+    }
+
+    await _context.SaveChangesAsync();
+    return string.Empty;
   }
 
-  public Task<string> DeleteAsync(Order order)
+  public async Task<string> DeleteAsync(Order order)
   {
-    var removed = Orders.RemoveAll(currentOrder => currentOrder.Id == order.Id) > 0;
-    return Task.FromResult(removed ? string.Empty : "Pedido nao encontrado.");
+    var existing = await _context.Orders.FindAsync(order.Id);
+    if (existing is null)
+      return "Pedido nao encontrado.";
+    _context.Orders.Remove(existing);
+    await _context.SaveChangesAsync();
+    return string.Empty;
   }
 
-  public Task<Order?> GetByIdAsync(string orderId)
-  {
-    return Task.FromResult(Orders.FirstOrDefault(currentOrder => currentOrder.Id == orderId));
-  }
+  public async Task<Order?> GetByIdAsync(string orderId)
+    => await _context.Orders
+      .Include(o => o.Items)
+      .FirstOrDefaultAsync(o => o.Id == orderId);
 
-  public Task<List<Order>> GetAllAsync()
-  {
-    return Task.FromResult(Orders.ToList());
-  }
+  public async Task<List<Order>> GetAllAsync()
+    => await _context.Orders
+      .Include(o => o.Items)
+      .ToListAsync();
 }

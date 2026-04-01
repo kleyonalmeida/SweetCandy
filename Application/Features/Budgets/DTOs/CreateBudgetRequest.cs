@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Domain.Entities;
 
 namespace Application.Features.Budgets.DTOs;
 
 public class CreateBudgetRequest
 {
   public string? ClientName { get; set; }
-  public Customer? Customer { get; set; }
+  public string? CustomerId { get; set; }
   public DateTime? EventDate { get; set; }
   public string? FinalProductName { get; set; }
   public string? FinalProductDescription { get; set; }

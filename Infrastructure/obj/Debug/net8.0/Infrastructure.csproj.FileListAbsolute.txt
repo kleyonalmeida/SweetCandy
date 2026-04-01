@@ -16,3 +16,5 @@
 /home/kley/SweetCandy/Infrastructure/obj/Debug/net8.0/refint/Infrastructure.dll
 /home/kley/SweetCandy/Infrastructure/obj/Debug/net8.0/Infrastructure.pdb
 /home/kley/SweetCandy/Infrastructure/obj/Debug/net8.0/ref/Infrastructure.dll
+/home/kley/SweetCandy/Infrastructure/bin/Debug/net8.0/Infrastructure.runtimeconfig.json
+/home/kley/SweetCandy/Infrastructure/obj/Debug/net8.0/Infrastructure.genruntimeconfig.cache
