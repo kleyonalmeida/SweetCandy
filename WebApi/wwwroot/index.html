@@ -12,11 +12,14 @@
 </head>
 <body>
 
+  <!-- OVERLAY MOBILE SIDEBAR -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo"><i class="fa-solid fa-candy-cane"></i></div>
-      <div>
+      <div class="brand-text">
         <div class="brand-name">SweetCandy</div>
         <div class="brand-sub">Gestão profissional</div>
       </div>
@@ -28,41 +31,34 @@
       <a class="nav-item" data-page="financas">
         <i class="fa-solid fa-wallet nav-icon"></i><span>Finanças</span>
       </a>
+      <a class="nav-item" data-page="gestao-caixa">
+        <i class="fa-solid fa-cash-register nav-icon"></i><span>Gestão de Caixa</span>
+      </a>
       <a class="nav-item" data-page="pedidos">
         <i class="fa-solid fa-clipboard-list nav-icon"></i><span>Pedidos</span>
-      </a>
-      <a class="nav-item" data-page="estoque">
-        <i class="fa-solid fa-boxes-stacked nav-icon"></i><span>Estoque</span>
       </a>
       <a class="nav-item" data-page="orcamentos">
         <i class="fa-solid fa-file-invoice nav-icon"></i><span>Orçamentos</span>
       </a>
+      <a class="nav-item" data-page="estoque">
+        <i class="fa-solid fa-boxes-stacked nav-icon"></i><span>Estoque</span>
+      </a>
       <a class="nav-item" data-page="clientes">
         <i class="fa-solid fa-users nav-icon"></i><span>Clientes</span>
-      </a>
-      <a class="nav-item" data-page="categorias">
-        <i class="fa-solid fa-tags nav-icon"></i><span>Categorias</span>
-      </a>
-      <a class="nav-item" data-page="recibos">
-        <i class="fa-solid fa-receipt nav-icon"></i><span>Recibos</span>
-      </a>
-      <a class="nav-item" data-page="despesas">
-        <i class="fa-solid fa-arrow-trend-down nav-icon"></i><span>Despesas</span>
-      </a>
-      <a class="nav-item" data-page="movimentacoes">
-        <i class="fa-solid fa-arrow-right-arrow-left nav-icon"></i><span>Movimentações</span>
       </a>
     </nav>
     <div class="sidebar-footer">
       <i class="fa-solid fa-code nav-icon"></i>
-      <a href="/swagger" target="_blank" style="color:var(--text-muted);font-size:.8rem;">Swagger API</a>
+      <a href="/swagger" target="_blank" class="sidebar-footer-link">Swagger API</a>
     </div>
   </aside>
 
   <!-- MAIN -->
   <div class="main-wrapper">
     <header class="topbar">
-      <button class="btn-menu" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <button class="btn-menu" id="btn-menu" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
       <span class="topbar-title" id="topbar-title">Painel</span>
       <div class="topbar-right">
         <span id="topbar-date"></span>

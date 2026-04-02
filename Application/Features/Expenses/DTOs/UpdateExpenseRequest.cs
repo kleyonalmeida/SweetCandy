@@ -1,3 +1,5 @@
+using Domain.Enums;
+
 namespace Application.Features.Expenses.DTOs;
 
 public class UpdateExpenseRequest
@@ -7,4 +9,5 @@ public class UpdateExpenseRequest
   public bool? Paid { get; set; }
   public DateTime? Date { get; set; }
   public string? Category { get; set; }
+  public FormaPagamento? PaymentMethod { get; set; }
 }
