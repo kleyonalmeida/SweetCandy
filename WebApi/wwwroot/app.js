@@ -62,10 +62,11 @@ function navigate(page) {
 }
 
 function toggleSidebar() {
-  const sb = document.getElementById('sidebar');
-  const ov = document.getElementById('sidebar-overlay');
+  const sb  = document.getElementById('sidebar');
+  const sw  = document.getElementById('sidebar-wrapper');
+  const ov  = document.getElementById('sidebar-overlay');
   if (window.innerWidth <= 768) {
-    sb.classList.toggle('open');
+    sw.classList.toggle('open');
     ov.classList.toggle('open');
   } else {
     sb.classList.toggle('collapsed');
@@ -142,10 +143,11 @@ function toggleValues() {
 async function renderDashboard() {
   setContent(loadingHtml());
 
-  const [dash, orders, customers] = await Promise.all([
+  const [dash, orders, customers, receipts] = await Promise.all([
     get(`/Dashboard?year=${dashYear}&month=${dashMonth + 1}`),
     get('/Orders/GetAll?page=1&pageSize=1000'),
     get('/Customers/GetAll?page=1&pageSize=1000'),
+    get('/Receipts/GetAll?page=1&pageSize=1000'),
   ]);
 
   const d = dash.data || {};
@@ -161,145 +163,260 @@ async function renderDashboard() {
   const pedidosPendentes   = (orders.data || []).filter(o => o.status === 0).length;
   const pedidosConfirmados = (orders.data || []).filter(o => o.status === 1).length;
   const totalClientes      = (customers.data || []).length;
+  const allReceipts        = receipts.data || [];
 
   const eyeIcon = valuesHidden
-    ? '<i class="fa-solid fa-eye-slash"></i> Exibir Valores'
-    : '<i class="fa-solid fa-eye"></i> Esconder Valores';
+    ? '<i class="fa-solid fa-eye-slash"></i> Exibir'
+    : '<i class="fa-solid fa-eye"></i> Ocultar';
 
-  const metaLabel = isCustomGoal
-    ? 'Meta personalizada'
-    : `Sugestão automática (gastos × 1,5)`;
+  const metaLabel = isCustomGoal ? 'meta personalizada' : 'sugestão automática';
+
+  // ── Dados semanais do mês para o gráfico ──────────────
+  const semanas = calcWeeklyProfit(allReceipts, dashMonth, dashYear);
 
   setContent(`
     <section class="welcome-section">
-      <p class="greeting">Bem-vinda! 👋</p>
-      <h1>Olá, SweetCandy!</h1>
-    </section>
-
-    <div class="month-nav">
-      <button class="month-nav-btn" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-      <span class="month-nav-label">${MESES[dashMonth]} de ${dashYear}</span>
-      <button class="month-nav-btn" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
-      <button class="hide-values-btn" onclick="toggleValues()">${eyeIcon}</button>
-    </div>
-
-    <div class="summary-cards">
-      <div class="summary-card" onclick="navigate('financas')" style="cursor:pointer">
-        <div class="sc-icon green"><i class="fa-solid fa-arrow-trend-up"></i></div>
-        <div class="sc-body">
-          <div class="sc-label">Receitas</div>
-          <div class="sc-value green">${brlH(totalReceitas)}</div>
-        </div>
-      </div>
-      <div class="summary-card" onclick="navigate('financas')" style="cursor:pointer">
-        <div class="sc-icon red"><i class="fa-solid fa-arrow-trend-down"></i></div>
-        <div class="sc-body">
-          <div class="sc-label">Despesas</div>
-          <div class="sc-value red">${brlH(totalDespesas)}</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="sc-icon orange"><i class="fa-solid fa-scale-balanced"></i></div>
-        <div class="sc-body">
-          <div class="sc-label">Lucro</div>
-          <div class="sc-value ${lucro >= 0 ? 'orange' : 'red'}">${brlH(lucro)}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="meta-card">
-      <div class="meta-card-header">
-        <span class="meta-card-title"><i class="fa-solid fa-bullseye"></i> Meta Mensal</span>
-        <div style="display:flex;align-items:center;gap:.5rem">
-          <span class="meta-pct">${metaBarPct}%</span>
-          <button class="btn btn-secondary" style="padding:.25rem .6rem;font-size:.75rem" onclick="btnConfigMeta()">
-            <i class="fa-solid fa-gear"></i> Configurar
-          </button>
-        </div>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" style="width:${metaBarPct}%"></div>
-      </div>
-      <div class="meta-details">
-        <div class="meta-detail">
-          <span class="meta-detail-label">Realizado</span>
-          <span class="meta-detail-value">${brlH(totalReceitas)}</span>
-        </div>
-        <div class="meta-detail">
-          <span class="meta-detail-label">Meta</span>
-          <span class="meta-detail-value" title="${metaLabel}">${brlH(effectiveGoal)}</span>
-        </div>
-        <div class="meta-detail">
-          <span class="meta-detail-label">Falta</span>
-          <span class="meta-detail-value">${brlH(Math.max(0, effectiveGoal - totalReceitas))}</span>
-        </div>
-      </div>
-      ${!isCustomGoal && suggestedGoal > 0 ? `<p style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem">
-        <i class="fa-solid fa-circle-info"></i> Meta calculada automaticamente: gastos do mês × 1,5.
-        <a href="#" onclick="btnConfigMeta();return false">Personalizar</a>
-      </p>` : ''}
-    </div>
-
-    <div class="cards-grid">
-      <div class="card" onclick="navigate('pedidos')" style="cursor:pointer">
-        <div class="card-badge">${pedidosPendentes}</div>
-        <div class="card-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--primary)"></i></div>
-        <div class="card-label">Pedidos Pendentes</div>
-        <div class="card-value pink">${pedidosPendentes}</div>
-        <div class="card-sub">${pedidosConfirmados} confirmados</div>
-      </div>
-      <div class="card" onclick="navigate('clientes')" style="cursor:pointer">
-        <div class="card-icon"><i class="fa-solid fa-users" style="color:var(--primary-dark)"></i></div>
-        <div class="card-label">Clientes</div>
-        <div class="card-value purple">${totalClientes}</div>
-        <div class="card-sub">cadastrados</div>
-      </div>
-    </div>
-
-    <section class="quick-actions">
-      <div class="section-header"><h2>Ações rápidas</h2></div>
-      <div class="quick-grid">
-        <a class="quick-card" onclick="navigate('financas'); setTimeout(()=>btnNewTransacao('receita'),300)">
-          <span class="qc-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>Nova receita
-        </a>
-        <a class="quick-card" onclick="navigate('financas'); setTimeout(()=>btnNewTransacao('despesa'),300)">
-          <span class="qc-icon"><i class="fa-solid fa-arrow-trend-down"></i></span>Nova despesa
-        </a>
-        <a class="quick-card" onclick="navigate('pedidos'); setTimeout(()=>btnNewPedido(),300)">
-          <span class="qc-icon"><i class="fa-solid fa-clipboard-list"></i></span>Novo pedido
-        </a>
-        <a class="quick-card" onclick="navigate('orcamentos'); setTimeout(()=>btnNewOrcamento(),300)">
-          <span class="qc-icon"><i class="fa-solid fa-file-invoice"></i></span>Novo orçamento
-        </a>
-        <a class="quick-card" onclick="navigate('clientes'); setTimeout(()=>btnNewCliente(),300)">
-          <span class="qc-icon"><i class="fa-solid fa-user-plus"></i></span>Novo cliente
-        </a>
-        <a class="quick-card" onclick="navigate('estoque')">
-          <span class="qc-icon"><i class="fa-solid fa-boxes-stacked"></i></span>Ver estoque
-        </a>
+      <p class="greeting">Bem-vinda de volta 👋</p>
+      <h1>Painel SweetCandy</h1>
+      <div class="month-nav">
+        <button class="month-nav-btn" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="month-nav-label">${MESES[dashMonth]} de ${dashYear}</span>
+        <button class="month-nav-btn" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        <button class="hide-values-btn" onclick="toggleValues()">${eyeIcon}</button>
       </div>
     </section>
 
-    ${(orders.data||[]).length > 0 ? `
-    <section>
-      <div class="section-header"><h2>Pedidos recentes</h2></div>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Pedido</th><th>Data</th><th>Total</th><th>Status</th></tr></thead>
-          <tbody>
-            ${(orders.data||[]).slice(-5).reverse().map(o => `
-              <tr>
-                <td><strong>${o.name || '—'}</strong></td>
-                <td>${fmtDate(o.eventDate)}</td>
-                <td>${brl(o.totalValue)}</td>
-                <td><span class="badge ${STATUS_CLASS[o.status]}">${STATUS_ORDER[o.status]}</span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </section>` : ''}
+    <div class="dash-layout">
+
+      <!-- COLUNA PRINCIPAL -->
+      <div class="dash-main">
+
+        <!-- Stat chips pequenos -->
+        <div class="stat-chips">
+          <div class="stat-chip" onclick="navigate('financas')" title="Ver finanças">
+            <div class="stat-chip-label">Receitas</div>
+            <div class="stat-chip-value green">${brlH(totalReceitas)}</div>
+            <div class="stat-chip-delta"><i class="fa-solid fa-arrow-trend-up" style="color:var(--success)"></i> ${MESES[dashMonth]}</div>
+          </div>
+          <div class="stat-chip" onclick="navigate('financas')" title="Ver finanças">
+            <div class="stat-chip-label">Despesas</div>
+            <div class="stat-chip-value red">${brlH(totalDespesas)}</div>
+            <div class="stat-chip-delta"><i class="fa-solid fa-arrow-trend-down" style="color:var(--danger)"></i> ${MESES[dashMonth]}</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-chip-label">Lucro</div>
+            <div class="stat-chip-value ${lucro >= 0 ? 'orange' : 'red'}">${brlH(lucro)}</div>
+            <div class="stat-chip-delta"><i class="fa-solid fa-scale-balanced" style="color:var(--primary)"></i> ${MESES[dashMonth]}</div>
+          </div>
+        </div>
+
+        <!-- Gráfico de lucro semanal -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <span class="chart-title">Receitas por semana</span>
+            <div class="chart-legend">
+              <span><span class="chart-legend-dot" style="background:var(--primary)"></span>Este mês</span>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="dash-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Meta mensal -->
+        <div class="meta-card">
+          <div class="meta-card-header">
+            <span class="meta-card-title"><i class="fa-solid fa-bullseye"></i> Meta Mensal</span>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span class="meta-pct">${metaBarPct}%</span>
+              <button class="btn btn-secondary" style="padding:.25rem .6rem;font-size:.75rem" onclick="btnConfigMeta()">
+                <i class="fa-solid fa-gear"></i> Configurar
+              </button>
+            </div>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${metaBarPct}%"></div>
+          </div>
+          <div class="meta-details">
+            <div class="meta-detail">
+              <span class="meta-detail-label">Realizado</span>
+              <span class="meta-detail-value">${brlH(totalReceitas)}</span>
+            </div>
+            <div class="meta-detail">
+              <span class="meta-detail-label">Meta</span>
+              <span class="meta-detail-value" title="${metaLabel}">${brlH(effectiveGoal)}</span>
+            </div>
+            <div class="meta-detail">
+              <span class="meta-detail-label">Falta</span>
+              <span class="meta-detail-value">${brlH(Math.max(0, effectiveGoal - totalReceitas))}</span>
+            </div>
+          </div>
+          ${!isCustomGoal && suggestedGoal > 0 ? `<p style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem">
+            <i class="fa-solid fa-circle-info"></i> Meta calculada automaticamente: gastos × 1,5.
+            <a href="#" onclick="btnConfigMeta();return false">Personalizar</a>
+          </p>` : ''}
+        </div>
+
+        <!-- Pedidos recentes -->
+        ${(orders.data||[]).length > 0 ? `
+        <div>
+          <div class="section-header">
+            <h2>Pedidos recentes</h2>
+            <a class="btn btn-sm btn-secondary" onclick="navigate('pedidos')">Ver todos →</a>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Pedido</th><th>Data</th><th>Total</th><th>Status</th></tr></thead>
+              <tbody>
+                ${(orders.data||[]).slice(-5).reverse().map(o => `
+                  <tr>
+                    <td><strong>${o.name || '—'}</strong></td>
+                    <td>${fmtDate(o.eventDate)}</td>
+                    <td>${brl(o.totalValue)}</td>
+                    <td><span class="badge ${STATUS_CLASS[o.status]}">${STATUS_ORDER[o.status]}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>` : ''}
+
+      </div><!-- /dash-main -->
+
+      <!-- COLUNA LATERAL -->
+      <div class="dash-side">
+
+        <!-- Resumo operacional -->
+        <div class="side-card">
+          <div class="side-card-title">Operacional</div>
+          <div class="side-stat-row">
+            <span class="side-stat-name">
+              <i class="fa-solid fa-clipboard-list"></i>
+              Pedidos pendentes
+            </span>
+            <span class="side-stat-val">${pedidosPendentes}</span>
+          </div>
+          <div class="side-stat-row">
+            <span class="side-stat-name">
+              <i class="fa-solid fa-circle-check" style="background:#dcfce7;color:#16a34a"></i>
+              Confirmados
+            </span>
+            <span class="side-stat-val" style="color:var(--success)">${pedidosConfirmados}</span>
+          </div>
+          <div class="side-stat-row">
+            <span class="side-stat-name">
+              <i class="fa-solid fa-users"></i>
+              Clientes
+            </span>
+            <span class="side-stat-val">${totalClientes}</span>
+          </div>
+        </div>
+
+        <!-- Meta resumida -->
+        <div class="side-card" onclick="btnConfigMeta()" style="cursor:pointer" title="Configurar meta">
+          <div class="side-card-title">Meta do mês</div>
+          <div class="side-meta-pct">${metaBarPct}%</div>
+          <div class="side-meta-label">${brlH(totalReceitas)} de ${brlH(effectiveGoal)}</div>
+          <div class="progress-track" style="margin-bottom:0">
+            <div class="progress-fill" style="width:${metaBarPct}%"></div>
+          </div>
+        </div>
+
+        <!-- Ações rápidas compactas -->
+        <div class="side-card">
+          <div class="side-card-title">Ações rápidas</div>
+          <div class="side-actions">
+            <button class="side-action-btn" onclick="navigate('financas'); setTimeout(()=>btnNewTransacao('receita'),300)">
+              <i class="fa-solid fa-arrow-trend-up"></i> Nova receita
+            </button>
+            <button class="side-action-btn" onclick="navigate('financas'); setTimeout(()=>btnNewTransacao('despesa'),300)">
+              <i class="fa-solid fa-arrow-trend-down" style="background:#fee2e2;color:var(--danger)"></i> Nova despesa
+            </button>
+            <button class="side-action-btn" onclick="navigate('pedidos'); setTimeout(()=>btnNewPedido(),300)">
+              <i class="fa-solid fa-clipboard-list"></i> Novo pedido
+            </button>
+            <button class="side-action-btn" onclick="navigate('orcamentos'); setTimeout(()=>btnNewOrcamento(),300)">
+              <i class="fa-solid fa-file-invoice"></i> Novo orçamento
+            </button>
+            <button class="side-action-btn" onclick="navigate('clientes'); setTimeout(()=>btnNewCliente(),300)">
+              <i class="fa-solid fa-user-plus"></i> Novo cliente
+            </button>
+            <button class="side-action-btn" onclick="navigate('estoque')">
+              <i class="fa-solid fa-boxes-stacked"></i> Ver estoque
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /dash-side -->
+
+    </div><!-- /dash-layout -->
   `);
+
+  // Renderizar gráfico após DOM estar pronto
+  requestAnimationFrame(() => renderDashChart(semanas));
+}
+
+// Calcula receita total por semana do mês para o gráfico
+function calcWeeklyProfit(allReceipts, month, year) {
+  // Determina número de semanas do mês (agrupando por semana ISO dentro do mês)
+  const firstDay = new Date(year, month, 1);
+  const lastDay  = new Date(year, month + 1, 0);
+  const weeks = [];
+  let cur = new Date(firstDay);
+  let weekNum = 1;
+  while (cur <= lastDay) {
+    const start = new Date(cur);
+    const end   = new Date(cur);
+    end.setDate(end.getDate() + 6);
+    if (end > lastDay) end.setTime(lastDay.getTime());
+    weeks.push({ label: `Sem ${weekNum}`, start, end, total: 0 });
+    cur.setDate(cur.getDate() + 7);
+    weekNum++;
+  }
+  for (const r of allReceipts) {
+    const d = new Date(r.date || r.receiptDate || r.createdAt || '');
+    if (isNaN(d)) continue;
+    if (d.getMonth() !== month || d.getFullYear() !== year) continue;
+    for (const w of weeks) {
+      if (d >= w.start && d <= w.end) { w.total += r.amount ?? r.value ?? 0; break; }
+    }
+  }
+  return weeks;
+}
+
+// Desenha o gráfico de linha com Chart.js
+let _dashChart = null;
+function renderDashChart(weeks) {
+  const canvas = document.getElementById('dash-chart');
+  if (!canvas) return;
+  if (_dashChart) { _dashChart.destroy(); _dashChart = null; }
+  _dashChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: weeks.map(w => w.label),
+      datasets: [{
+        label: 'Receitas',
+        data: weeks.map(w => w.total),
+        borderColor: '#e8663c',
+        backgroundColor: 'rgba(232,102,60,.08)',
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: '#e8663c',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { color: '#9ca3af', font: { size: 11 }, callback: v => 'R$' + v.toLocaleString('pt-BR') } }
+      }
+    }
+  });
 }
 
 function btnConfigMeta() {
@@ -347,7 +464,7 @@ async function saveGoal() {
     body.targetAmount = isNaN(val) ? null : val;
   }
 
-  const r = await post('/MonthlyGoals/Upsert', body);
+  const r = await post('/MonthlyGoals', body);
   if (r.isSuccessful) { closeModal(); toast('Meta salva!'); renderDashboard(); }
   else toast((r.messages || []).join(', '), 'error');
 }

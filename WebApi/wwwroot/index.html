@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -16,49 +17,51 @@
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-logo"><i class="fa-solid fa-candy-cane"></i></div>
-      <div class="brand-text">
-        <div class="brand-name">SweetCandy</div>
-        <div class="brand-sub">Gestão profissional</div>
+  <div class="sidebar-wrapper" id="sidebar-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo"><i class="fa-solid fa-cake-candles"></i></div>
+        <div class="brand-text">
+          <div class="brand-name">SweetCandy</div>
+          <div class="brand-sub">Gestão profissional</div>
+        </div>
+        <div class="sidebar-toggle" onclick="toggleSidebar()">
+          <i class="fa-solid fa-bars sidebar-toggle-icon"></i>
+        </div>
       </div>
-    </div>
-    <nav class="sidebar-nav">
-      <a class="nav-item active" data-page="dashboard">
-        <i class="fa-solid fa-chart-pie nav-icon"></i><span>Painel</span>
-      </a>
-      <a class="nav-item" data-page="financas">
-        <i class="fa-solid fa-wallet nav-icon"></i><span>Finanças</span>
-      </a>
-      <a class="nav-item" data-page="gestao-caixa">
-        <i class="fa-solid fa-cash-register nav-icon"></i><span>Gestão de Caixa</span>
-      </a>
-      <a class="nav-item" data-page="pedidos">
-        <i class="fa-solid fa-clipboard-list nav-icon"></i><span>Pedidos</span>
-      </a>
-      <a class="nav-item" data-page="orcamentos">
-        <i class="fa-solid fa-file-invoice nav-icon"></i><span>Orçamentos</span>
-      </a>
-      <a class="nav-item" data-page="estoque">
-        <i class="fa-solid fa-boxes-stacked nav-icon"></i><span>Estoque</span>
-      </a>
-      <a class="nav-item" data-page="clientes">
-        <i class="fa-solid fa-users nav-icon"></i><span>Clientes</span>
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <i class="fa-solid fa-code nav-icon"></i>
-      <a href="/swagger" target="_blank" class="sidebar-footer-link">Swagger API</a>
-    </div>
-  </aside>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-page="dashboard">
+          <i class="fa-solid fa-chart-pie nav-icon"></i><span>Painel</span>
+        </a>
+        <a class="nav-item" data-page="financas">
+          <i class="fa-solid fa-wallet nav-icon"></i><span>Finanças</span>
+        </a>
+        <a class="nav-item" data-page="gestao-caixa">
+          <i class="fa-solid fa-cash-register nav-icon"></i><span>Gestão de Caixa</span>
+        </a>
+        <a class="nav-item" data-page="pedidos">
+          <i class="fa-solid fa-clipboard-list nav-icon"></i><span>Pedidos</span>
+        </a>
+        <a class="nav-item" data-page="orcamentos">
+          <i class="fa-solid fa-file-invoice nav-icon"></i><span>Orçamentos</span>
+        </a>
+        <a class="nav-item" data-page="estoque">
+          <i class="fa-solid fa-boxes-stacked nav-icon"></i><span>Estoque</span>
+        </a>
+        <a class="nav-item" data-page="clientes">
+          <i class="fa-solid fa-users nav-icon"></i><span>Clientes</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <i class="fa-solid fa-arrow-right-from-bracket nav-icon" style="color:var(--sidebar-text)"></i>
+        <a href="/swagger" target="_blank" class="sidebar-footer-link">Swagger API</a>
+      </div>
+    </aside>
+  </div>
 
   <!-- MAIN -->
   <div class="main-wrapper">
     <header class="topbar">
-      <button class="btn-menu" id="btn-menu" onclick="toggleSidebar()">
-        <i class="fa-solid fa-bars"></i>
-      </button>
       <span class="topbar-title" id="topbar-title">Painel</span>
       <div class="topbar-right">
         <span id="topbar-date"></span>
