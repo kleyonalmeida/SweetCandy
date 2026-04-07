@@ -142,24 +142,33 @@ function toggleValues() {
 async function renderDashboard() {
   setContent(loadingHtml());
 
-  const [receipts, expenses, orders, customers] = await Promise.all([
-    get('/Receipts/GetAll?page=1&pageSize=1000'),
-    get('/Expenses/GetAll?page=1&pageSize=1000'),
+  const [dash, orders, customers] = await Promise.all([
+    get(`/Dashboard?year=${dashYear}&month=${dashMonth + 1}`),
     get('/Orders/GetAll?page=1&pageSize=1000'),
     get('/Customers/GetAll?page=1&pageSize=1000'),
   ]);
 
-  const totalReceitas    = (receipts.data || []).reduce((s, r) => s + (r.amount || 0), 0);
-  const totalDespesas    = (expenses.data || []).reduce((s, e) => s + (e.value || 0), 0);
-  const pedidosPendentes = (orders.data || []).filter(o => o.status === 0).length;
+  const d = dash.data || {};
+  const totalReceitas      = d.revenue    ?? 0;
+  const totalDespesas      = d.expenses   ?? 0;
+  const lucro              = d.profit     ?? 0;
+  const effectiveGoal      = d.effectiveGoal      ?? 0;
+  const effectiveGoalPct   = d.effectiveGoalPercent ?? 0;
+  const suggestedGoal      = d.suggestedGoal ?? 0;
+  const isCustomGoal       = d.monthlyGoalTarget != null;
+  const metaBarPct         = Math.min(100, Math.round(effectiveGoalPct));
+
+  const pedidosPendentes   = (orders.data || []).filter(o => o.status === 0).length;
   const pedidosConfirmados = (orders.data || []).filter(o => o.status === 1).length;
-  const totalClientes    = (customers.data || []).length;
-  const lucro = totalReceitas - totalDespesas;
-  const metaMensal = 5000;
-  const metaPct = Math.min(100, Math.round((totalReceitas / metaMensal) * 100));
+  const totalClientes      = (customers.data || []).length;
+
   const eyeIcon = valuesHidden
     ? '<i class="fa-solid fa-eye-slash"></i> Exibir Valores'
     : '<i class="fa-solid fa-eye"></i> Esconder Valores';
+
+  const metaLabel = isCustomGoal
+    ? 'Meta personalizada'
+    : `Sugestão automática (gastos × 1,5)`;
 
   setContent(`
     <section class="welcome-section">
@@ -201,10 +210,15 @@ async function renderDashboard() {
     <div class="meta-card">
       <div class="meta-card-header">
         <span class="meta-card-title"><i class="fa-solid fa-bullseye"></i> Meta Mensal</span>
-        <span class="meta-pct">${metaPct}%</span>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span class="meta-pct">${metaBarPct}%</span>
+          <button class="btn btn-secondary" style="padding:.25rem .6rem;font-size:.75rem" onclick="btnConfigMeta()">
+            <i class="fa-solid fa-gear"></i> Configurar
+          </button>
+        </div>
       </div>
       <div class="progress-track">
-        <div class="progress-fill" style="width:${metaPct}%"></div>
+        <div class="progress-fill" style="width:${metaBarPct}%"></div>
       </div>
       <div class="meta-details">
         <div class="meta-detail">
@@ -213,13 +227,17 @@ async function renderDashboard() {
         </div>
         <div class="meta-detail">
           <span class="meta-detail-label">Meta</span>
-          <span class="meta-detail-value">${brl(metaMensal)}</span>
+          <span class="meta-detail-value" title="${metaLabel}">${brlH(effectiveGoal)}</span>
         </div>
         <div class="meta-detail">
           <span class="meta-detail-label">Falta</span>
-          <span class="meta-detail-value">${brlH(Math.max(0, metaMensal - totalReceitas))}</span>
+          <span class="meta-detail-value">${brlH(Math.max(0, effectiveGoal - totalReceitas))}</span>
         </div>
       </div>
+      ${!isCustomGoal && suggestedGoal > 0 ? `<p style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem">
+        <i class="fa-solid fa-circle-info"></i> Meta calculada automaticamente: gastos do mês × 1,5.
+        <a href="#" onclick="btnConfigMeta();return false">Personalizar</a>
+      </p>` : ''}
     </div>
 
     <div class="cards-grid">
@@ -282,6 +300,56 @@ async function renderDashboard() {
       </div>
     </section>` : ''}
   `);
+}
+
+function btnConfigMeta() {
+  openModal('Configurar Meta Mensal', `
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Modo</label>
+        <select class="form-control" id="meta-modo" onchange="toggleMetaModo()">
+          <option value="valor">Valor fixo (R$)</option>
+          <option value="pct">Porcentagem sobre os gastos (%)</option>
+        </select>
+      </div>
+      <div class="form-group" id="meta-valor-group">
+        <label>Valor da meta (R$)</label>
+        <input class="form-control" id="meta-valor" type="number" step="0.01" min="0" placeholder="Ex: 3000.00" />
+      </div>
+      <div class="form-group" id="meta-pct-group" style="display:none">
+        <label>Porcentagem sobre os gastos (%)</label>
+        <input class="form-control" id="meta-pct-input" type="number" step="1" min="0" max="1000" placeholder="Ex: 50 = gastos × 1,5" />
+        <small style="color:var(--text-muted)">50% significa: meta = gastos do mês + 50%</small>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveGoal()">Salvar Meta</button>
+      </div>
+    </div>
+  `);
+}
+
+function toggleMetaModo() {
+  const modo = document.getElementById('meta-modo')?.value;
+  document.getElementById('meta-valor-group').style.display = modo === 'valor' ? '' : 'none';
+  document.getElementById('meta-pct-group').style.display   = modo === 'pct'   ? '' : 'none';
+}
+
+async function saveGoal() {
+  const modo = document.getElementById('meta-modo')?.value;
+  const body = { year: dashYear, month: dashMonth + 1 };
+
+  if (modo === 'pct') {
+    const pct = parseFloat(document.getElementById('meta-pct-input')?.value);
+    body.percentageOverCosts = isNaN(pct) ? null : pct;
+  } else {
+    const val = parseFloat(document.getElementById('meta-valor')?.value);
+    body.targetAmount = isNaN(val) ? null : val;
+  }
+
+  const r = await post('/MonthlyGoals/Upsert', body);
+  if (r.isSuccessful) { closeModal(); toast('Meta salva!'); renderDashboard(); }
+  else toast((r.messages || []).join(', '), 'error');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -391,7 +459,7 @@ function buildFinList(receipts, expenses, tab) {
         <div class="tx-icon despesa"><i class="fa-solid fa-arrow-trend-down"></i></div>
         <div class="tx-info">
           <strong>${e.name || '—'}</strong>
-          <span>${fmtDate(e.date)} · ${FORMA_PAG[e.paymentMethod] || '—'} · ${e.paid
+          <span>${fmtDate(e.date)} · ${FORMA_PAG[e.paymentMethod] || '—'}${e.categoryName ? ` · <i class="fa-solid fa-tag" style="font-size:.7rem"></i> ${e.categoryName}` : ''} · ${e.paid
             ? '<i class="fa-solid fa-check" style="color:var(--success)"></i> Pago'
             : '<i class="fa-regular fa-clock" style="color:var(--warning)"></i> Pendente'}</span>
         </div>
@@ -495,8 +563,6 @@ async function saveTransacao() {
   const data    = v('tx-data');
   const metodo  = parseInt(v('tx-metodo'));
 
-  if (!valor || valor <= 0) return toast('Valor inválido', 'error');
-
   if (_txTipo === 'receita') {
     const body = {
       finalProductName: v('tx-r-prod') || null,
@@ -514,10 +580,9 @@ async function saveTransacao() {
       value: valor,
       paid: false,
       date: data || new Date().toISOString(),
-      category: v('tx-e-cat') || null,
+      categoryName: v('tx-e-cat') || null,
       paymentMethod: metodo,
     };
-    if (!body.name) return toast('Nome da despesa é obrigatório', 'error');
     const r = await post('/Expenses/Create', body);
     if (r.isSuccessful) { closeModal(); toast('Despesa adicionada!'); renderFinancas(); }
     else toast((r.messages||[]).join(', '), 'error');
@@ -526,7 +591,14 @@ async function saveTransacao() {
 
 // Recibos (edit/delete mantidos para uso nas ações da lista)
 function editRecibo(r)   { openModal('Editar Receita', formRecibo(r)); }
-function editDespesa(e)  { openModal('Editar Despesa', formDespesa(e)); }
+async function editDespesa(e) {
+  const cats = await get('/Categories/GetAll');
+  const catOpts = '<option value="">— sem categoria —</option>' +
+    (cats.data || []).map(c =>
+      `<option value="${c.id}" ${e?.categoryId === c.id ? 'selected' : ''}>${c.name}</option>`
+    ).join('');
+  openModal('Editar Despesa', formDespesa(e, catOpts));
+}
 
 function formRecibo(r) {
   const pagOpts = Object.entries(FORMA_PAG).map(([k, val]) =>
@@ -561,7 +633,6 @@ async function createRecibo() {
     paymentMethod: parseInt(v('r-pag')),
     description: v('r-desc')||null,
   };
-  if (!b.date || !b.amount) return toast('Data e Valor são obrigatórios', 'error');
   const r = await post('/Receipts/Create', b);
   if (r.isSuccessful) { closeModal(); toast('Recibo criado!'); renderFinancas(); }
   else toast((r.messages||[]).join(', '), 'error');
@@ -587,7 +658,7 @@ async function deleteRecibo(id) {
   else toast((r.messages||[]).join(', '), 'error');
 }
 
-function formDespesa(e) {
+function formDespesa(e, catOpts = '') {
   const pagOpts = Object.entries(FORMA_PAG).map(([k, val]) =>
     `<option value="${k}" ${e && e.paymentMethod == k ? 'selected' : ''}>${val}</option>`).join('');
   return `<div class="form-grid">
@@ -596,6 +667,8 @@ function formDespesa(e) {
     <div class="form-group"><label>Valor (R$) *</label>
       <input class="form-control" id="e-val" type="number" step="0.01"
         value="${e?.value||''}" placeholder="0,00" required /></div>
+    ${catOpts ? `<div class="form-group"><label>Categoria</label>
+      <select class="form-control" id="e-cat">${catOpts}</select></div>` : ''}
     <div class="form-group"><label>Método de Pagamento</label>
       <select class="form-control" id="e-pag">${pagOpts}</select></div>
     <div class="form-group"><label>Status</label>
@@ -615,9 +688,9 @@ async function createDespesa() {
     name: v('e-name'),
     value: parseFloat(v('e-val'))||0,
     paid: v('e-paid') === 'true',
+    categoryId: v('e-cat') || null,
     paymentMethod: parseInt(v('e-pag')||'0'),
   };
-  if (!b.name) return toast('Nome é obrigatório', 'error');
   const r = await post('/Expenses/Create', b);
   if (r.isSuccessful) { closeModal(); toast('Despesa criada!'); renderFinancas(); }
   else toast((r.messages||[]).join(', '), 'error');
@@ -628,6 +701,7 @@ async function saveDespesa(id) {
     name: v('e-name')||null,
     value: parseFloat(v('e-val'))||null,
     paid: v('e-paid') === 'true',
+    categoryId: v('e-cat') || null,
     paymentMethod: parseInt(v('e-pag')||'0'),
   };
   const r = await put(`/Expenses/Update/${id}`, b);
@@ -990,7 +1064,6 @@ async function createPedido() {
     totalValue: parseFloat(v('p-total')) || null,
     items: []
   };
-  if (!body.name) return toast('Nome é obrigatório', 'error');
   const r = await post('/Orders/Create', body);
   if (r.isSuccessful) { closeModal(); toast('Pedido criado!'); renderPedidos(); }
   else toast((r.messages||[]).join(', '), 'error');
@@ -1263,7 +1336,6 @@ function formCliente(c) {
 
 async function createCliente() {
   const b = { name: v('c-name'), phone: v('c-phone')||null, email: v('c-email')||null, address: v('c-addr')||null, birthDate: v('c-birth')||null };
-  if (!b.name) return toast('Nome é obrigatório', 'error');
   const r = await post('/Customers/Create', b);
   if (r.isSuccessful) { closeModal(); toast('Cliente criado!'); renderCrud('clientes'); }
   else toast((r.messages||[]).join(', '), 'error');
@@ -1509,7 +1581,6 @@ function formSupply(s) {
 
 async function createSupply() {
   const b = { name: v('s-name'), quantity: parseFloat(v('s-qty'))||null, unit: parseInt(v('s-unit')), price: parseFloat(v('s-price'))||null };
-  if (!b.name) return toast('Nome é obrigatório', 'error');
   const r = await post('/Inventories/CreateSupply', b);
   if (r.isSuccessful) { closeModal(); toast('Insumo criado!'); renderEstoque(); }
   else toast((r.messages||[]).join(', '), 'error');
@@ -1556,7 +1627,6 @@ function formFinal(p) {
 
 async function createFinal() {
   const b = { name: v('f-name'), description: v('f-desc')||null, costPrice: parseFloat(v('f-cost'))||null, unitPrice: parseFloat(v('f-price'))||null, quantityAvailable: parseFloat(v('f-qty'))||null };
-  if (!b.name) return toast('Nome é obrigatório', 'error');
   const r = await post('/Inventories/CreateFinalProduct', b);
   if (r.isSuccessful) { closeModal(); toast('Produto criado!'); renderEstoque(); }
   else toast((r.messages||[]).join(', '), 'error');
@@ -1595,7 +1665,6 @@ function formCategoria(c) {
 
 async function createCategoria() {
   const b = { name: v('cat-name'), description: v('cat-desc')||null };
-  if (!b.name) return toast('Nome é obrigatório', 'error');
   const r = await post('/Categories/Create', b);
   if (r.isSuccessful) { closeModal(); toast('Categoria criada!'); loadEstoqueCategorias(); }
   else toast((r.messages||[]).join(', '), 'error');
@@ -1646,7 +1715,6 @@ async function createMovimento() {
     type: parseInt(v('m-type')),
     notes: v('m-notes') || null,
   };
-  if (!b.quantity) return toast('Quantidade é obrigatória', 'error');
   const r = await post('/StockMovements/Create', b);
   if (r.isSuccessful) { closeModal(); toast('Movimentação registrada!'); loadEstoqueMovimentacoes(); }
   else toast((r.messages||[]).join(', '), 'error');

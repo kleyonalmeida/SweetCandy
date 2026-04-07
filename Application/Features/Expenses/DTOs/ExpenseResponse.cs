@@ -10,7 +10,8 @@ public class ExpenseResponse
   public bool Paid { get; set; }
   public decimal? TotalExpense { get; set; }
   public DateTime Date { get; set; }
-  public string? Category { get; set; }
+  public string? CategoryId { get; set; }
+  public string? CategoryName { get; set; }
   public FormaPagamento PaymentMethod { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime UpdatedAt { get; set; }

@@ -10,6 +10,9 @@ public class Expense : BaseEntity
   public bool Paid { get; set; } = false;
   public decimal? TotalExpense { get; set; }
   public DateTime Date { get; set; } = DateTime.UtcNow;
-  public string? Category { get; set; }
+  /// <summary>Texto livre legado — preferência: use CategoryId (FK).</summary>
+  public string? CategoryName { get; set; }
+  public string? CategoryId { get; set; }
+  public Category? Category { get; set; }
   public FormaPagamento PaymentMethod { get; set; } = FormaPagamento.Dinheiro;
 }

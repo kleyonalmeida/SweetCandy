@@ -1,4 +1,5 @@
 using Application.Features.StockMovements.Commands;
+using Domain.Enums;
 using FluentValidation;
 
 namespace Application.Features.StockMovements.Validations;
@@ -15,5 +16,8 @@ public class CreateStockMovementCommandValidator : AbstractValidator<CreateStock
 
     RuleFor(command => command.CreateStockMovement.Quantity)
       .GreaterThan(0);
+
+    RuleFor(command => command.CreateStockMovement.Type)
+      .IsInEnum();
   }
 }

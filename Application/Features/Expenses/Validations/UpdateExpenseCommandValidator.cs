@@ -13,6 +13,10 @@ public class UpdateExpenseCommandValidator : AbstractValidator<UpdateExpenseComm
     RuleFor(command => command.UpdateExpense)
       .NotNull();
 
+    RuleFor(command => command.UpdateExpense.Name)
+      .NotEmpty()
+      .When(command => command.UpdateExpense.Name is not null);
+
     RuleFor(command => command.UpdateExpense.Value)
       .GreaterThanOrEqualTo(0)
       .When(command => command.UpdateExpense.Value.HasValue);

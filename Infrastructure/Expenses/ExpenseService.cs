@@ -29,7 +29,8 @@ public class ExpenseService(AppDbContext context) : IExpenseService
     existing.Paid = expense.Paid;
     existing.TotalExpense = expense.TotalExpense;
     existing.Date = expense.Date;
-    existing.Category = expense.Category;
+    existing.CategoryName = expense.CategoryName;
+    existing.CategoryId = expense.CategoryId;
     existing.PaymentMethod = expense.PaymentMethod;
     existing.UpdatedAt = DateTime.UtcNow;
     await _context.SaveChangesAsync();

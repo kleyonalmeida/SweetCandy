@@ -45,6 +45,12 @@ public class GetDashboardQueryHandler(
     if (goal is not null && goal.TargetAmount > 0)
       goalPercent = Math.Round(revenue / goal.TargetAmount * 100m, 2);
 
+    var suggestedGoal = Math.Round(expenses * 1.5m, 2);
+    var effectiveGoal = goal?.TargetAmount ?? suggestedGoal;
+    var effectiveGoalPercent = effectiveGoal > 0
+      ? Math.Round(revenue / effectiveGoal * 100m, 2)
+      : 0m;
+
     var dto = new DashboardResponse
     {
       Year = year,
@@ -53,7 +59,10 @@ public class GetDashboardQueryHandler(
       Expenses = expenses,
       Profit = profit,
       MonthlyGoalTarget = goal?.TargetAmount,
-      GoalProgressPercent = goalPercent
+      GoalProgressPercent = goalPercent,
+      SuggestedGoal = suggestedGoal,
+      EffectiveGoal = effectiveGoal,
+      EffectiveGoalPercent = effectiveGoalPercent
     };
 
     return await ResponseWrapper<DashboardResponse>.SuccessAsync(dto);

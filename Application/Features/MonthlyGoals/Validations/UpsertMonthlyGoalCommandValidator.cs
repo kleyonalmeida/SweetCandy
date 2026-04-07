@@ -10,6 +10,17 @@ public class UpsertMonthlyGoalCommandValidator : AbstractValidator<UpsertMonthly
     RuleFor(x => x.Request).NotNull();
     RuleFor(x => x.Request!.Year).InclusiveBetween(2000, 2100);
     RuleFor(x => x.Request!.Month).InclusiveBetween(1, 12);
-    RuleFor(x => x.Request!.TargetAmount).GreaterThanOrEqualTo(0);
+
+    RuleFor(x => x.Request)
+      .Must(r => r.TargetAmount.HasValue || r.PercentageOverCosts.HasValue)
+      .WithMessage("Informe TargetAmount (R$) ou PercentageOverCosts (%).");
+
+    RuleFor(x => x.Request!.TargetAmount)
+      .GreaterThanOrEqualTo(0)
+      .When(x => x.Request!.TargetAmount.HasValue);
+
+    RuleFor(x => x.Request!.PercentageOverCosts)
+      .InclusiveBetween(0, 1000)
+      .When(x => x.Request!.PercentageOverCosts.HasValue);
   }
 }

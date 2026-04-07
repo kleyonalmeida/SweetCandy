@@ -1,4 +1,5 @@
 using Application.Features.Receipts.Commands;
+using Domain.Enums;
 using FluentValidation;
 
 namespace Application.Features.Receipts.Validations;
@@ -15,5 +16,8 @@ public class CreateReceiptCommandValidator : AbstractValidator<CreateReceiptComm
 
     RuleFor(command => command.CreateReceipt.Amount)
       .GreaterThan(0);
+
+    RuleFor(command => command.CreateReceipt.PaymentMethod)
+      .IsInEnum();
   }
 }

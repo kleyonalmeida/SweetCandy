@@ -8,6 +8,7 @@ public class UpdateExpenseRequest
   public decimal? Value { get; set; }
   public bool? Paid { get; set; }
   public DateTime? Date { get; set; }
-  public string? Category { get; set; }
+  public string? CategoryId { get; set; }
+  public string? CategoryName { get; set; }
   public FormaPagamento? PaymentMethod { get; set; }
 }

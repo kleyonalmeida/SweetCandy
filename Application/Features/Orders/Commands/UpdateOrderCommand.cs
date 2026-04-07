@@ -40,6 +40,7 @@ public class UpdateOrderCommandHandler(
 
     if (previousStatus != StatusOrder.Confirmada && order.Status == StatusOrder.Confirmada)
     {
+      var stockErrors = new List<string>();
       foreach (var item in order.Items)
       {
         var movement = new StockMovement
@@ -50,8 +51,13 @@ public class UpdateOrderCommandHandler(
           OrderId = order.Id,
           Notes = $"Baixa automatica de estoque para o pedido {order.Id}"
         };
-        await _stockMovementService.CreateAsync(movement);
+        var result = await _stockMovementService.CreateAsync(movement);
+        if (!Guid.TryParse(result, out _))
+          stockErrors.Add(result);
       }
+      if (stockErrors.Count > 0)
+        return await ResponseWrapper.FailAsync(
+          $"Pedido atualizado, mas houve erro(s) na baixa de estoque: {string.Join("; ", stockErrors)}");
     }
 
     if (previousStatus != StatusOrder.Concluida && order.Status == StatusOrder.Concluida)

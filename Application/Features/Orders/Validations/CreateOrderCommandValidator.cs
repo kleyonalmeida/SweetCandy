@@ -1,4 +1,5 @@
 using Application.Features.Orders.Commands;
+using Domain.Enums;
 using FluentValidation;
 
 namespace Application.Features.Orders.Validations;
@@ -12,6 +13,9 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
 
     RuleFor(command => command.CreateOrder.Name)
       .NotEmpty().WithMessage("Nome do cliente é obrigatório.");
+
+    RuleFor(command => command.CreateOrder.Status)
+      .IsInEnum();
 
     RuleForEach(command => command.CreateOrder.Items)
       .ChildRules(item =>

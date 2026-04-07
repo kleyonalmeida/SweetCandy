@@ -41,8 +41,12 @@ public class CreateStockMovementCommandHandler(
 
     var movement = request.CreateStockMovement.Adapt<StockMovement>();
 
-    var createdId = await _stockMovementService.CreateAsync(movement);
+    var result = await _stockMovementService.CreateAsync(movement);
 
-    return await ResponseWrapper.SuccessAsync($"Movimentacao de estoque criada com sucesso. Id: {createdId}");
+    // CreateAsync retorna mensagem de erro quando o estoque é insuficiente ou o insumo não existe
+    if (!Guid.TryParse(result, out _))
+      return await ResponseWrapper.FailAsync(result);
+
+    return await ResponseWrapper.SuccessAsync($"Movimentacao de estoque criada com sucesso. Id: {result}");
   }
 }

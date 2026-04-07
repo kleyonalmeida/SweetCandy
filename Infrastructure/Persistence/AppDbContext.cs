@@ -116,5 +116,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       .HasForeignKey(sm => sm.OrderId)
       .IsRequired(false)
       .OnDelete(DeleteBehavior.SetNull);
+
+    // Expense → Category (optional FK)
+    modelBuilder.Entity<Expense>()
+      .HasOne(e => e.Category)
+      .WithMany()
+      .HasForeignKey(e => e.CategoryId)
+      .IsRequired(false)
+      .OnDelete(DeleteBehavior.SetNull);
   }
 }

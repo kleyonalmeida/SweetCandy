@@ -9,4 +9,7 @@ public class DashboardResponse
   public decimal Profit { get; set; }
   public decimal? MonthlyGoalTarget { get; set; }
   public decimal? GoalProgressPercent { get; set; }
+  public decimal SuggestedGoal { get; set; }
+  public decimal EffectiveGoal { get; set; }
+  public decimal EffectiveGoalPercent { get; set; }
 }
