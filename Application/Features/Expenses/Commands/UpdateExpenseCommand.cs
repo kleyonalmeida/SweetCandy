@@ -22,7 +22,7 @@ public class UpdateExpenseCommandHandler(IExpenseService expenseService) : IRequ
 
     request.UpdateExpense.Adapt(expense, MapsterSettings.IgnoreNullValues);
 
-    expense.UpdatedAt = DateTime.UtcNow;
+    expense.MarkUpdated();
 
     var serviceMessage = await _expenseService.UpdateAsync(expense);
     var successMessage = string.IsNullOrWhiteSpace(serviceMessage)

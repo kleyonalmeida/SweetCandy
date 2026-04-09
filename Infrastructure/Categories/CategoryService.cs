@@ -11,9 +11,6 @@ public class CategoryService(AppDbContext context) : ICategoryService
 
   public async Task<string> CreateAsync(Category category)
   {
-    category.Id = Guid.NewGuid().ToString();
-    category.CreatedAt = DateTime.UtcNow;
-    category.UpdatedAt = DateTime.UtcNow;
     _context.Categories.Add(category);
     await _context.SaveChangesAsync();
     return category.Id;

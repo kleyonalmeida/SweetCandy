@@ -11,9 +11,6 @@ public class CustomerService(AppDbContext context) : ICustomerService
 
   public async Task<string> CreateAsync(Customer customer)
   {
-    customer.Id = Guid.NewGuid().ToString();
-    customer.CreatedAt = DateTime.UtcNow;
-    customer.UpdatedAt = DateTime.UtcNow;
     _context.Customers.Add(customer);
     await _context.SaveChangesAsync();
     return customer.Id;

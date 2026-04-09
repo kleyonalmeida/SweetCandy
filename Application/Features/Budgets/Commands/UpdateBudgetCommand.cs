@@ -37,10 +37,10 @@ public class UpdateBudgetCommandHandler(IBudgetService budgetService) : IRequest
     request.UpdateBudget.Adapt(budget, MapsterSettings.IgnoreNullValues);
 
     if (request.UpdateBudget.Items.Count > 0)
-      budget.Items = MapItems(request.UpdateBudget.Items);
+      budget.SetItems(MapItems(request.UpdateBudget.Items));
 
     budget.FinalTotalValue = ResolveTotalValue(request.UpdateBudget, budget);
-    budget.UpdatedAt = DateTime.UtcNow;
+    budget.MarkUpdated();
   }
 
   private static decimal? ResolveTotalValue(UpdateBudgetRequest updateBudget, Budget budget)
@@ -64,7 +64,6 @@ public class UpdateBudgetCommandHandler(IBudgetService budgetService) : IRequest
       .Select(item =>
       {
         var budgetItem = item.Adapt<BudgetItem>();
-        budgetItem.TotalPrice = item.UnitPrice.HasValue ? item.UnitPrice.Value * item.Quantity : null;
         return budgetItem;
       })
       .ToList();

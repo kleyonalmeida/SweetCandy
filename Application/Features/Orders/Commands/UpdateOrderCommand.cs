@@ -82,10 +82,10 @@ public class UpdateOrderCommandHandler(
     updateOrder.Adapt(order, MapsterSettings.IgnoreNullValues);
 
     if (updateOrder.Items.Count > 0)
-      order.Items = MapItems(updateOrder.Items);
+      order.SetItems(MapItems(updateOrder.Items));
 
     order.TotalValue = ResolveTotalValue(updateOrder.TotalValue, order.Items.ToList(), order.TotalValue);
-    order.UpdatedAt = DateTime.UtcNow;
+    order.MarkUpdated();
   }
 
   private static decimal? ResolveTotalValue(decimal? informedTotal, List<OrderItem> items, decimal? currentTotal)
@@ -107,7 +107,6 @@ public class UpdateOrderCommandHandler(
       {
         var orderItem = item.Adapt<OrderItem>();
         orderItem.UnitPrice = item.UnitPrice ?? 0m;
-        orderItem.TotalPrice = (item.UnitPrice ?? 0m) * item.Quantity;
         return orderItem;
       })
       .ToList();

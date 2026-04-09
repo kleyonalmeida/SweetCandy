@@ -14,5 +14,27 @@ public class Budget : BaseEntity
   public decimal? FinalProductQuantity { get; set; }
   public decimal? FinalUnitPrice { get; set; }
   public decimal? FinalTotalValue { get; set; }
-  public ICollection<BudgetItem> Items { get; set; } = [];
+
+  private readonly List<BudgetItem> _items = new();
+  public IReadOnlyCollection<BudgetItem> Items => _items.AsReadOnly();
+
+  public void SetItems(IEnumerable<BudgetItem> items)
+  {
+    _items.Clear();
+    foreach (var item in items)
+    {
+      item.BudgetId = Id;
+      _items.Add(item);
+    }
+    MarkUpdated();
+  }
+
+  public void AddItem(BudgetItem item)
+  {
+    item.BudgetId = Id;
+    _items.Add(item);
+    MarkUpdated();
+  }
+
+  public void ClearItems() => _items.Clear();
 }

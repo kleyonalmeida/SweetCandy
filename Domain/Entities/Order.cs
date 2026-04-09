@@ -12,6 +12,28 @@ public class Order : BaseEntity
   public DateTime? EventDate { get; set; }
   public StatusOrder Status { get; set; } = StatusOrder.Pendente;
   public decimal? Sinal { get; set; }
-  public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
   public decimal? TotalValue { get; set; }
+
+  private readonly List<OrderItem> _items = new();
+  public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
+
+  public void SetItems(IEnumerable<OrderItem> items)
+  {
+    _items.Clear();
+    foreach (var item in items)
+    {
+      item.OrderId = Id;
+      _items.Add(item);
+    }
+    MarkUpdated();
+  }
+
+  public void AddItem(OrderItem item)
+  {
+    item.OrderId = Id;
+    _items.Add(item);
+    MarkUpdated();
+  }
+
+  public void ClearItems() => _items.Clear();
 }

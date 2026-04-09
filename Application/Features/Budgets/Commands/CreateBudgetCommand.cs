@@ -45,7 +45,7 @@ public class CreateBudgetCommandHandler(
     var items = MapItems(request.CreateBudget.Items);
 
     var budget = request.CreateBudget.Adapt<Budget>();
-    budget.Items = items;
+    budget.SetItems(items);
     budget.FinalTotalValue = ResolveTotalValue(
       request.CreateBudget.FinalTotalValue,
       request.CreateBudget.FinalProductQuantity,
@@ -89,7 +89,6 @@ public class CreateBudgetCommandHandler(
       .Select(item =>
       {
         var budgetItem = item.Adapt<BudgetItem>();
-        budgetItem.TotalPrice = item.UnitPrice.HasValue ? item.UnitPrice.Value * item.Quantity : null;
         return budgetItem;
       })
       .ToList();

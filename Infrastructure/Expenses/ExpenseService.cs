@@ -11,9 +11,6 @@ public class ExpenseService(AppDbContext context) : IExpenseService
 
   public async Task<string> CreateAsync(Expense expense)
   {
-    expense.Id = Guid.NewGuid().ToString();
-    expense.CreatedAt = DateTime.UtcNow;
-    expense.UpdatedAt = DateTime.UtcNow;
     _context.Expenses.Add(expense);
     await _context.SaveChangesAsync();
     return expense.Id;

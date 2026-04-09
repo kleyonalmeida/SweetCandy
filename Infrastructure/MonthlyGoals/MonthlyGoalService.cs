@@ -29,9 +29,6 @@ public class MonthlyGoalService(AppDbContext context) : IMonthlyGoalService
       return string.Empty;
     }
 
-    goal.Id = Guid.NewGuid().ToString();
-    goal.CreatedAt = DateTime.UtcNow;
-    goal.UpdatedAt = DateTime.UtcNow;
     _context.MonthlyGoals.Add(goal);
     await _context.SaveChangesAsync();
     return string.Empty;

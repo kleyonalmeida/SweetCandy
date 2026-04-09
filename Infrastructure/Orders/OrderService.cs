@@ -11,16 +11,6 @@ public class OrderService(AppDbContext context) : IOrdersService
 
   public async Task<string> CreateAsync(Order order)
   {
-    order.Id = Guid.NewGuid().ToString();
-    order.CreatedAt = DateTime.UtcNow;
-    order.UpdatedAt = DateTime.UtcNow;
-    foreach (var item in order.Items)
-    {
-      item.Id = Guid.NewGuid().ToString();
-      item.OrderId = order.Id;
-      item.CreatedAt = DateTime.UtcNow;
-      item.UpdatedAt = DateTime.UtcNow;
-    }
     _context.Orders.Add(order);
     await _context.SaveChangesAsync();
     return order.Id;
@@ -46,14 +36,9 @@ public class OrderService(AppDbContext context) : IOrdersService
     if (order.Items.Count > 0)
     {
       _context.OrderItems.RemoveRange(existing.Items);
+      existing.ClearItems();
       foreach (var item in order.Items)
-      {
-        item.Id = Guid.NewGuid().ToString();
-        item.OrderId = existing.Id;
-        item.CreatedAt = DateTime.UtcNow;
-        item.UpdatedAt = DateTime.UtcNow;
-        existing.Items.Add(item);
-      }
+        existing.AddItem(item);
     }
 
     await _context.SaveChangesAsync();

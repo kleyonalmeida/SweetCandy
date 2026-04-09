@@ -31,12 +31,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       .HasForeignKey(i => i.BudgetId)
       .OnDelete(DeleteBehavior.Cascade);
 
+    modelBuilder.Entity<Budget>()
+      .Navigation(b => b.Items)
+      .UsePropertyAccessMode(PropertyAccessMode.Field);
+
     // Order → OrderItem (one-to-many, cascade)
     modelBuilder.Entity<Order>()
       .HasMany(o => o.Items)
       .WithOne(i => i.Order)
       .HasForeignKey(i => i.OrderId)
       .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<Order>()
+      .Navigation(o => o.Items)
+      .UsePropertyAccessMode(PropertyAccessMode.Field);
 
     // Customer → Budget (one-to-many)
     modelBuilder.Entity<Customer>()
@@ -124,5 +132,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
       .HasForeignKey(e => e.CategoryId)
       .IsRequired(false)
       .OnDelete(DeleteBehavior.SetNull);
+
+    // TotalPrice é calculado em memória (Quantity * UnitPrice); ignorar mapeamento de coluna
+    modelBuilder.Entity<OrderItem>().Ignore(i => i.TotalPrice);
+    modelBuilder.Entity<BudgetItem>().Ignore(i => i.TotalPrice);
   }
 }

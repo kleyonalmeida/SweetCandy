@@ -11,9 +11,6 @@ public class ReceiptService(AppDbContext context) : IReceiptsService
 
   public async Task<string> CreateAsync(Receipt receipt)
   {
-    receipt.Id = Guid.NewGuid().ToString();
-    receipt.CreatedAt = DateTime.UtcNow;
-    receipt.UpdatedAt = DateTime.UtcNow;
     _context.Receipts.Add(receipt);
     await _context.SaveChangesAsync();
     return receipt.Id;

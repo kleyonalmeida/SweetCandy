@@ -18,7 +18,7 @@ public class InventoryService(AppDbContext context) : IInventoryService
 
     if (inventory is null)
     {
-      inventory = new Inventory { Id = Guid.NewGuid().ToString() };
+      inventory = new Inventory();
       _context.Inventories.Add(inventory);
       await _context.SaveChangesAsync();
     }
@@ -34,7 +34,7 @@ public class InventoryService(AppDbContext context) : IInventoryService
     var inventory = await _context.Inventories.FirstOrDefaultAsync();
     if (inventory is null)
     {
-      inventory = new Inventory { Id = Guid.NewGuid().ToString() };
+      inventory = new Inventory();
       _context.Inventories.Add(inventory);
       await _context.SaveChangesAsync();
     }
@@ -50,9 +50,6 @@ public class InventoryService(AppDbContext context) : IInventoryService
 
   public async Task<string> CreateSupplyAsync(Supply supply)
   {
-    supply.Id = Guid.NewGuid().ToString();
-    supply.CreatedAt = DateTime.UtcNow;
-    supply.UpdatedAt = DateTime.UtcNow;
     if (string.IsNullOrWhiteSpace(supply.InventoryId))
     {
       var inv = await GetOrCreateInventoryAsync();
@@ -101,9 +98,6 @@ public class InventoryService(AppDbContext context) : IInventoryService
 
   public async Task<string> CreateFinalProductAsync(FinalProduct finalProduct)
   {
-    finalProduct.Id = Guid.NewGuid().ToString();
-    finalProduct.CreatedAt = DateTime.UtcNow;
-    finalProduct.UpdatedAt = DateTime.UtcNow;
     _context.FinalProducts.Add(finalProduct);
     await _context.SaveChangesAsync();
     return finalProduct.Id;
@@ -149,9 +143,6 @@ public class InventoryService(AppDbContext context) : IInventoryService
 
   public async Task<string> AddRecipeItemAsync(RecipeItem item)
   {
-    item.Id = Guid.NewGuid().ToString();
-    item.CreatedAt = DateTime.UtcNow;
-    item.UpdatedAt = DateTime.UtcNow;
     _context.RecipeItems.Add(item);
     await _context.SaveChangesAsync();
     return item.Id;

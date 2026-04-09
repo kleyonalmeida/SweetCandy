@@ -15,4 +15,11 @@ public class Expense : BaseEntity
   public string? CategoryId { get; set; }
   public Category? Category { get; set; }
   public FormaPagamento PaymentMethod { get; set; } = FormaPagamento.Dinheiro;
+
+  public void MarkAsPaid()
+  {
+    if (Paid) throw new InvalidOperationException("Despesa já está paga.");
+    Paid = true;
+    MarkUpdated();
+  }
 }

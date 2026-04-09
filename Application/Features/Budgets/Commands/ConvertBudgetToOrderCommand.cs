@@ -30,15 +30,17 @@ public class ConvertBudgetToOrderCommandHandler(
       EventDate = budget.EventDate,
       Status = StatusOrder.Pendente,
       TotalValue = budget.FinalTotalValue,
-      Items = budget.Items.Select(item => new OrderItem
-      {
-        FinalProductId = item.FinalProductId,
-        FinalProductName = item.FinalProductName,
-        Quantity = item.Quantity,
-        UnitPrice = item.UnitPrice ?? 0m,
-        TotalPrice = item.TotalPrice ?? 0m
-      }).ToList()
     };
+
+    var items = budget.Items.Select(item => new OrderItem
+    {
+      FinalProductId = item.FinalProductId,
+      FinalProductName = item.FinalProductName,
+      Quantity = item.Quantity,
+      UnitPrice = item.UnitPrice ?? 0m,
+    }).ToList();
+
+    order.SetItems(items);
 
     var createdOrderId = await _ordersService.CreateAsync(order);
 

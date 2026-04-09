@@ -35,10 +35,7 @@ public class StockMovementService(AppDbContext context) : IStockMovementService
       supply.UpdatedAt = DateTime.UtcNow;
     }
 
-    movement.Id = Guid.NewGuid().ToString();
     movement.Date = DateTime.UtcNow;
-    movement.CreatedAt = DateTime.UtcNow;
-    movement.UpdatedAt = DateTime.UtcNow;
     _context.StockMovements.Add(movement);
     await _context.SaveChangesAsync();
     return movement.Id;

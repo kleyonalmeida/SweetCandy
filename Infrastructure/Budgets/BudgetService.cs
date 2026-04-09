@@ -11,16 +11,6 @@ public class BudgetService(AppDbContext context) : IBudgetService
 
   public async Task<string> CreateAsync(Budget budget)
   {
-    budget.Id = Guid.NewGuid().ToString();
-    budget.CreatedAt = DateTime.UtcNow;
-    budget.UpdatedAt = DateTime.UtcNow;
-    foreach (var item in budget.Items)
-    {
-      item.Id = Guid.NewGuid().ToString();
-      item.BudgetId = budget.Id;
-      item.CreatedAt = DateTime.UtcNow;
-      item.UpdatedAt = DateTime.UtcNow;
-    }
     _context.Budgets.Add(budget);
     await _context.SaveChangesAsync();
     return budget.Id;
@@ -48,14 +38,9 @@ public class BudgetService(AppDbContext context) : IBudgetService
     if (budget.Items.Count > 0)
     {
       _context.BudgetItems.RemoveRange(existing.Items);
+      existing.ClearItems();
       foreach (var item in budget.Items)
-      {
-        item.Id = Guid.NewGuid().ToString();
-        item.BudgetId = existing.Id;
-        item.CreatedAt = DateTime.UtcNow;
-        item.UpdatedAt = DateTime.UtcNow;
-        existing.Items.Add(item);
-      }
+        existing.AddItem(item);
     }
 
     await _context.SaveChangesAsync();

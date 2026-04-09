@@ -45,7 +45,7 @@ public class CreateOrderCommandHandler(
     var items = MapItems(request.CreateOrder.Items);
 
     var order = request.CreateOrder.Adapt<Order>();
-    order.Items = items;
+    order.SetItems(items);
     order.TotalValue = ResolveTotalValue(request.CreateOrder.TotalValue, items);
 
     var createdOrderId = await _ordersService.CreateAsync(order);
@@ -73,7 +73,6 @@ public class CreateOrderCommandHandler(
       {
         var orderItem = item.Adapt<OrderItem>();
         orderItem.UnitPrice = item.UnitPrice ?? 0m;
-        orderItem.TotalPrice = (item.UnitPrice ?? 0m) * item.Quantity;
         return orderItem;
       })
       .ToList();
