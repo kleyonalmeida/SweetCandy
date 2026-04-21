@@ -173,9 +173,9 @@
               "target": "Package",
               "version": "[8.0.13, )"
             },
-            "Microsoft.EntityFrameworkCore.Sqlite": {
+            "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
-              "version": "[8.0.13, )"
+              "version": "[8.0.6, )"
             }
           },
           "imports": [

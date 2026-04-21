@@ -136,5 +136,34 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     // TotalPrice é calculado em memória (Quantity * UnitPrice); ignorar mapeamento de coluna
     modelBuilder.Entity<OrderItem>().Ignore(i => i.TotalPrice);
     modelBuilder.Entity<BudgetItem>().Ignore(i => i.TotalPrice);
+
+    // Ajustes de tipos para compatibilidade MySQL
+    modelBuilder.Entity<FinalProduct>().Property(fp => fp.CostPrice).HasColumnType("decimal(18,2)");
+    modelBuilder.Entity<FinalProduct>().Property(fp => fp.UnitPrice).HasColumnType("decimal(18,2)");
+    modelBuilder.Entity<FinalProduct>().Property(fp => fp.QuantityAvailable).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<Budget>().Property(b => b.FinalUnitPrice).HasColumnType("decimal(18,2)");
+    modelBuilder.Entity<Budget>().Property(b => b.FinalTotalValue).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<Order>().Property(o => o.Sinal).HasColumnType("decimal(18,2)");
+    modelBuilder.Entity<Order>().Property(o => o.TotalValue).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<BudgetItem>().Property(bi => bi.UnitPrice).HasColumnType("decimal(18,2)");
+    modelBuilder.Entity<BudgetItem>().Property(bi => bi.Quantity).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<OrderItem>().Property(oi => oi.UnitPrice).HasColumnType("decimal(18,2)");
+    modelBuilder.Entity<OrderItem>().Property(oi => oi.Quantity).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<Expense>().Property(e => e.Value).HasColumnType("decimal(18,2)");
+    modelBuilder.Entity<Expense>().Property(e => e.TotalExpense).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<Inventory>().Property(i => i.TotalInvested).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<Supply>().Property(s => s.Price).HasColumnType("decimal(18,2)");
+    modelBuilder.Entity<Supply>().Property(s => s.Quantity).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<Receipt>().Property(r => r.Amount).HasColumnType("decimal(18,2)");
+
+    modelBuilder.Entity<MonthlyGoal>().Property(mg => mg.TargetAmount).HasColumnType("decimal(18,2)");
   }
 }

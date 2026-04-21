@@ -245,3 +245,32 @@ Todas as alterações acima compilam sem erros ou avisos.
 
 *Última atualização: 07/04/2026*
 
+## Sessão 6 — Migração para MySQL e Docker (20/04/2026)
+
+### Migração do Provider EF Core
+**O quê:** Substituído `Microsoft.EntityFrameworkCore.Sqlite` por `Pomelo.EntityFrameworkCore.MySql` em `Infrastructure/Infrastructure.csproj`.
+**Por quê:** Preparar o projeto para executar com MySQL em produção e facilitar uso de container Docker com MySQL 8.
+
+### Configuração de Connection String
+**O quê:** `WebApi/Program.cs` alterado para ler `ConnectionStrings:DefaultConnection` (via `appsettings.json` ou `ConnectionStrings__DefaultConnection` env var) e usar `UseMySql(..., ServerVersion.AutoDetect(...))`.
+**Por quê:** Tornar o provedor e a connection string configuráveis por ambiente e compatíveis com Docker Compose.
+
+### Ajustes no DbContext
+**O quê:** `Infrastructure/Persistence/AppDbContext.cs` atualizado para explicitar tipos `decimal(18,2)` em colunas monetárias e evitar diferenças de mapeamento entre SQLite e MySQL.
+**Por quê:** MySQL exige precisão/escala explícitas para colunas `decimal` para evitar perda de precisão ou mapeamentos indesejados.
+
+### Dockerização
+**O quê:** Adicionados `Dockerfile` (multi-stage), `docker-compose.yml` (serviços `db` e `api`) e `.dockerignore` na raiz do repositório.
+**Por quê:** Containerizar `MySQL 8` e a `WebApi` para facilitar testes locais e deployment.
+
+### Migrations
+**O quê:** `Infrastructure/Migrations/AppDbContextModelSnapshot.cs` removido; objetivo é gerar nova migration inicial `MySqlInitial` usando o provider MySQL.
+**Por quê:** O snapshot antigo era específico de SQLite; para criar uma migration limpa compatível com MySQL é necessário recriar o snapshot.
+
+### Observações e próximos passos
+- As migrations antigas em `Infrastructure/Migrations/` foram mantidas como referência histórica.
+- Executar `dotnet restore` e `dotnet ef migrations add MySqlInitial -p Infrastructure -s WebApi` após o `dotnet restore` para gerar a nova migration MySQL.
+- Rodar `docker-compose up --build` para subir os containers; a API aplica migrations automaticamente na inicialização.
+
+*Última atualização: 20/04/2026*
+

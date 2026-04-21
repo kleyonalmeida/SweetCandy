@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    container_name: sweetcandy-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: sweetcandy
+      MYSQL_USER: sweetcandy
+      MYSQL_PASSWORD: sweetcandy123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: sweetcandy-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=sweetcandy;User=sweetcandy;Password=sweetcandy123;
+    ports:
+      - "5000:8080"
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+    driver: local

@@ -1,0 +1,13 @@
+bin/
+obj/
+*.db
+*.sqlite
+.vscode/
+.git/
+**/bin/
+**/obj/
+**/*.user
+**/*.vspscc
+**/*.vssscc
+node_modules/
+wwwroot/lib/

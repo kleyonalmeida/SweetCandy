@@ -33,9 +33,12 @@ builder.Services.AddCors(options =>
   });
 });
 
-var dbPath = Path.Combine(builder.Environment.ContentRootPath, "sweetcandy.db");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                       ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                       ?? "Server=localhost;Port=3306;Database=sweetcandy;User=sweetcandy;Password=sweetcandy123;";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-  options.UseSqlite($"Data Source={dbPath}"));
+  options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
